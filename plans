@@ -1,0 +1,53 @@
+state machine:
+
+situation:      solution:
+lu ru:          pull file.server_version.ext as read-only file
+lu rd:          just push file back
+ld ru:          pull remote update
+ld rd:          we're good
+
+metadata for each file on server:
+hash during last sync
+
+metadata for each file on client:
+hash at last sync (HALS)
+time of last update
+deletion flag
+was_conflicted
+
+sync protocol:
+    client already has list of local updates/deletions
+    client connects to server
+    server sends all metadata
+    client calculates conflicts
+    client dictates which files go where
+
+all conflicts are of the form:
+    local file's HALS is different than server's file's TOLS
+
+Never push a file if it's file.server_version exists
+the first time you detect file.server_version is deleted, force push
+
+
+
+modules:
+    server.py: daemon, server side
+
+    client.py: communication with server
+
+    daemon.py: daemon, client side: watches files, initiates push/pulls
+
+    file_encryption.py: give it a file, it hands back an encrypted file
+
+
+
+whats left:
+    network functionality
+    encryption
+    watchdog integrated path pattern matching
+    os.walk might have some pattern matching
+    need to move files in big batches
+    handling deleted files
+
+bugs:
+    watchdog fires after syncing happens
