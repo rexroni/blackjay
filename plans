@@ -47,7 +47,7 @@ whats left:
     watchdog integrated path pattern matching
     os.walk might have some pattern matching
     need to move files in big batches
-    handling deleted files
+
 
 bugs:
     watchdog fires after syncing happens

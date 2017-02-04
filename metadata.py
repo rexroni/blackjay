@@ -34,17 +34,24 @@ def load_metadata(filename):
     return meta
 
 def get_updated_local_metadata():
+    found_an_update = False
     ignore_patterns = load_ignore_patterns()
     meta = load_metadata('.blackjay/metadata')
     for root, dirs, files in os.walk('.'):
         for f in files:
             name = os.path.join(root,f)
             # ignore files that are already in our database
-            if meta.get(name,None) is not None:
+            meta_entry = meta.get(name,None)
+            if meta_entry is not None:
+                # check if this will become a local_update
+                if os.stat(name).st_mtime != meta_entry['mtime']:
+                    found_an_update = True
                 continue
             # and ignore files that match ignore patterns
             if should_ignore(name,ignore_patterns):
                 continue
+            ### otherwise, we have a new file:
+            found_an_update = True
             # "Hash At Last Sync"
             hals = 'never hashed'
             # mtime at last sync (not yet synced)
@@ -58,7 +65,8 @@ def get_updated_local_metadata():
     for name in meta.keys():
         if os.path.exists(name) is False:
             meta[name]['del_flag'] = True
-    return meta
+            found_an_update = True
+    return meta, found_an_update
 
 # all possible combinations of updates/deletions
 # note that (update AND delete) on one file isn't possible
@@ -115,9 +123,11 @@ def compare_metadata(localmeta,remotemeta):
             files_to_push[name] = local
             continue
         if local_update and remote_update:
-#A          # found a conflict!
-            ######################### THIS IS WHERE YOU ARE!!
-            ######################### about to start handling fixed conflicts
+#A          # found a conflict, but this conflict could be in one of three states
+            # new conflict (was_confl == false)
+            # resume conflict (was_confl == true, conflict file exists)
+            # resolve conflict (was_confl == true, conflict file removed)
+
             print('Conflict on %s'%(name))
             local['was_confl'] = True
             local['confl_mtime'] = remote['mtime']
