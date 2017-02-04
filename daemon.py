@@ -5,7 +5,6 @@ import logging
 from watchdog.observers import Observer
 import watchdog.events
 from watchdog.events import LoggingEventHandler,FileSystemEventHandler
-from watchdog.events import PatternMatchingEventHandler
 from time import time, sleep
 from pprint import pprint
 
@@ -42,15 +41,6 @@ class SyncHandler(FileSystemEventHandler):
         print('syncing due to',event.src_path)
         client.synchronize(self.remotepath)
         print('sync finished')
-
-    # def on_modified(self, event):
-    #     self.process(event)
-
-    # def on_deleted(self, event):
-    #     self.process(event)
-
-    # def on_moved(sefl, event):
-    #     self.process(event)
 
 
 if __name__ == "__main__":
