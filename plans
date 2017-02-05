@@ -51,3 +51,32 @@ whats left:
 
 bugs:
     watchdog fires after syncing happens
+
+
+
+# protocol steps:
+#    client says:                  server says:
+#--------------------------------------------------------------
+#1   give me metadata
+#2                                 Here is metadata
+#3   here are changes/pullreqs
+#4                                 Here are files / I am honoring these changes
+#                     (both write to files)
+
+
+## This is what archiver does:
+file system on:
+      client:                       server:
+
+1      <empty>                      <empty>
+
+2      <empty>                      <empty>
+
+3   .blackjay                       .blackjay
+      `-c2s.zip    >>>>>>>>>>>>>      |-c2sUID.zip
+                                      `-c2sUID/
+
+4   .blackjay                       .blackjay
+      |-c2s.zip                       |-c2sUID.zip
+      |-s2c.zip                       |-c2sUID/
+      `-s2c/       <<<<<<<<<<<<<      `-s2cUID.zip
