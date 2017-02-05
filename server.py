@@ -6,43 +6,35 @@ import sys
 import struct
 from metadata import *
 import json
-import sftp
-
-metadata_req_message = b"gimme the mettadata"
+metadata_req_message = b"gimme the metadata"
 prepare_message = b"prepare to receive all my acorns"
 prepare_response = b"send your worst"
 
 def recv_all(sock):
-    total_len = 0; total_data = []; size = sys.maxsize
-    size_data = sock_data = b''; recv_size = 8196
+    total_len = 0; payload_data = b''; size = 0
+    size_data = sock_data = b''
     len_data = b''; len_size = 0
-    while total_len < size:
-        sock_data = sock.recv(min(size-total_len, 2048))
-        if not len_size:
-            if len(sock_data)>1:
-                len_size = sock_data[0]
-                # print("Len of size field: {}".format(len_size))
-                sock_data = sock_data[1:]
-            else:
-                continue
+    # get the length field size
+    while not len_size:
+        sock_data = sock.recv(1)
+        if len(sock_data)>0:
+            len_size = sock_data[0]
 
-        if not total_data:
-            if len(sock_data)>len_size:
-                size_data += sock_data
-                size = int(size_data[:len_size])
-                # print("Received {} bytes".format(size))
-                recv_size = size
-                total_data.append(size_data[len_size:])
-            else:
-                size_data += sock_data
-        else:
-            total_data.append(sock_data)
-        total_len=sum([len(i) for i in total_data])
-    return b''.join(total_data)
+    # get the length field
+    while len(len_data) < len_size:
+        len_data += sock.recv(len_size-len(len_data))
+        if len(len_data) == len_size:
+            size = int(len_data[:len_size])
+
+    # get the data
+    while len(payload_data) < size:
+        payload_data += sock.recv(min(size-total_len, 2048))
+
+    return payload_data
 
 def send_file(filename, sock):
     size = str(os.stat(filename).st_size)
-    print("send_file: file size: {}".format(size))
+    print("send_file: file size: {}".format(size), flush=True)
     with open(filename, 'rb') as f:
         send_size(size, sock)
         data = f.read(2048) 
@@ -63,7 +55,7 @@ def progress_bar(completed, size):
 
 def recv_file(filename, sock):
     size = int(recv_all(sock))
-    print("recv_file: {}, size: {}".format(filename,size))
+    print("recv_file: {}, size: {}".format(filename,size), flush=True)
     read_size = 0
 
     with open(filename, 'wb') as f:
@@ -142,7 +134,7 @@ def main():
         #     exit(1)
 
     # Port 0 means to select an arbitrary unused port
-    HOST, PORT = socket.gethostname(), 0
+    HOST, PORT = socket.gethostname(), 12345
 
     server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
     with server:
@@ -160,7 +152,8 @@ def main():
         # meta = metadata_req(ip, port)
         # print("metadata: {}".format(meta))
 
-        # push_update(ip, port, "trash.zip")
+        push_update(ip, port, "trash.zip")
+        push_update(ip, port, "trash.zip")
 
         try:
             while True:
