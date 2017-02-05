@@ -63,7 +63,7 @@ def progress_bar(completed, size):
 
 def recv_file(filename, sock):
     size = int(recv_all(sock))
-    print("recv_file: file size: {}".format(size))
+    print("recv_file: {}, size: {}".format(filename,size))
     read_size = 0
 
     with open(filename, 'wb') as f:
