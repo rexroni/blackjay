@@ -66,6 +66,7 @@ def make_server_updates_live(push,UID):
             os.rename(os.path.join('.blackjay/c2s'+UID,name),name)
     # for pulling from the server, no metadata changes
     # the server doesn't handle conflicts
+    write_metadata(local_meta,'.blackjay/metadata')
 
 def make_client_updates_live(push,pull,conflicts):
     local_meta = load_metadata('.blackjay/metadata')
@@ -77,6 +78,7 @@ def make_client_updates_live(push,pull,conflicts):
         local_meta[name] = meta
         if meta['del_flag'] is False:
             os.rename(os.path.join('.blackjay/s2c',name),name)
+    write_metadata(local_meta,'.blackjay/metadata')
     # for conflicts, move file to conflict-styled name
     #for name,meta in pull.items():
     #    local_meta[name] = meta
