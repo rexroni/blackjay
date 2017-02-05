@@ -33,19 +33,24 @@ def push_metadata_update(remoteroot,name,meta):
     write_metadata(local_meta,'.blackjay/metadata')
 
 def delete_local(name):
-    os.remove(name)
+    if os.path.exists(name):
+        os.remove(name)
 
 def delete_remote(remoteroot,name):
     remotename = os.path.join(remoteroot,'.blackjay/metadata')
 
-def synchronize(remoteroot):
-    local_meta = get_updated_local_metadata()
+def synchronize(remoteroot,force_pull=False):
+    local_meta, any_updates = get_updated_local_metadata()
+    print('any updates?',any_updates)
+    if any_updates is False and force_pull is False: return
     remote_meta = get_remote_metadata(remoteroot)
     push, pull, conflicts = compare_metadata(local_meta,remote_meta)
     print('pushing',push)
     print('pulling',pull)
     print('conflicts',conflicts)
-    print('')
+    write_metadata(push,'../expush')
+    write_metadata(pull,'../expull')
+    write_metadata(conflicts,'../exconflicts')
     for name,meta in push.items():
         if meta['del_flag'] is True:
             delete_remote(remoteroot,name)

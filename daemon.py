@@ -22,7 +22,7 @@ class SyncHandler(FileSystemEventHandler):
 
     def process(self, event):
         """
-        event.event_type 
+        event.event_type
             'modified' | 'created' | 'moved' | 'deleted'
         event.is_directory
             True | False
@@ -32,15 +32,16 @@ class SyncHandler(FileSystemEventHandler):
         # the file will be processed there
         pprint( (event.src_path, event.event_type) ) # print now only for degug
 
-        if type(event) == watchdog.events.DirModifiedEvent: 
+        if type(event) == watchdog.events.DirModifiedEvent:
             print('ignoring dir modified event')
             return
-        if should_ignore(event.src_path,load_ignore_patterns()): 
+        if should_ignore(event.src_path,load_ignore_patterns()):
             print('ignoring file: ',event.src_path)
             return
         print('syncing due to',event.src_path)
         client.synchronize(self.remotepath)
         print('sync finished')
+        print('')
 
 
 if __name__ == "__main__":
@@ -58,20 +59,20 @@ if __name__ == "__main__":
         exit(1)
 
     # check for startup situations
-    if os.path.isdir('.encrynize') is not True:
+    if os.path.isdir('.blackjay') is not True:
         if len(os.listdir()) == 0:
             print('looks like a new installation.  Initializing...')
-            os.mkdir('.encrynize')
-            open('.encrynize/metadata','a').close()
+            os.mkdir('.blackjay')
+            open('.blackjay/metadata','a').close()
             # start with sane defaults in ignore file
-            ignf = open('.encrynize/ignore','w')
+            ignf = open('.blackjay/ignore','w')
             ignf.write(default_ignore_file)
             ignf.close()
         else:
             print('looks like restoring an old installation...')
             print('... I don\'t know how to do that yet!!')
             exit(1)
-    
+
     # start watching files
     observer = Observer()
     observer.schedule(SyncHandler(remotepath), '.', recursive=True)
