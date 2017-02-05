@@ -4,8 +4,10 @@ import socketserver
 import time
 import sys
 import struct
-from metadata import *
 import json
+from metadata import *
+from archiver import *
+
 metadata_req_message = b"gimme the metadata"
 prepare_message = b"prepare to receive all my acorns"
 prepare_response = b"send your worst"
@@ -37,10 +39,10 @@ def send_file(filename, sock):
     print("send_file: file size: {}".format(size), flush=True)
     with open(filename, 'rb') as f:
         send_size(size, sock)
-        data = f.read(2048) 
+        data = f.read(2048)
         while data:
             send_size(data, sock)
-            data = f.read(2048) 
+            data = f.read(2048)
 
 def progress_bar(completed, size):
     width = 60
@@ -98,6 +100,7 @@ def push_update(ip, port, filename):
             return False;
         else:
             send_file(filename, sock)
+            recv_file('.blackjay/s2c.zip', sock)
 
         sock.close()
 
@@ -110,8 +113,16 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             send_size(json.dumps(load_metadata(".blackjay/metadata")), self.request)
         elif data == prepare_message:
             send_size(prepare_response, self.request)
-            recv_file('.blackjay/c2s{}.zip'.format(cur_thread), self.request)
+            UID = str(cur_thread)
+            zipfile = '.blackjay/c2s{}.zip'.format(UID)
+            recv_file(zipfile, self.request)
             print("Like a boss")
+            push, pull, conflicts = extract_client_to_server_archive(zipfile,UID)
+            # right now, accept every acorn!
+            resp_zipname = prep_server_to_client_archive(push, pull, conflicts, UID)
+            send_file(resp_zipname, self.request)
+            make_server_updates_live(push,UID)
+            cleanup_server_temp_files(UID)
         else:
             send_size('you fucked up', self.request)
         self.request.close()
@@ -152,8 +163,8 @@ def main():
         # meta = metadata_req(ip, port)
         # print("metadata: {}".format(meta))
 
-        push_update(ip, port, "trash.zip")
-        push_update(ip, port, "trash.zip")
+        #push_update(ip, port, "trash.zip")
+        #push_update(ip, port, "trash.zip")
 
         try:
             while True:

@@ -33,10 +33,10 @@ class SyncHandler(FileSystemEventHandler):
         pprint( (event.src_path, event.event_type) ) # print now only for degug
 
         if type(event) == watchdog.events.DirModifiedEvent:
-            print('ignoring dir modified event')
+            #print('ignoring dir modified event')
             return
         if should_ignore(event.src_path,load_ignore_patterns()):
-            print('ignoring file: ',event.src_path)
+            #print('ignoring file: ',event.src_path)
             return
         print('syncing due to',event.src_path)
         client.synchronize(self.remotepath)

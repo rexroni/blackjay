@@ -57,12 +57,37 @@ def extract_server_to_client_archive():
     conflicts = load_metadata(os.path.join(tempdir,'.blackjay/conflicts'))
     return push, pull, conflicts
 
-def cleanup_client_temp_files(UID):
-    os.rm('.blackjay/c2s.zip')
-    os.rm('.blackjay/s2c.zip')
+def make_server_updates_live(push,UID):
+    local_meta = load_metadata('.blackjay/metadata')
+    # for pushes which were accepted, update local metadata
+    for name,meta in push.items():
+        local_meta[name] = meta
+        if meta['del_flag'] is False:
+            os.rename(os.path.join('.blackjay/c2s'+UID,name),name)
+    # for pulling from the server, no metadata changes
+    # the server doesn't handle conflicts
+
+def make_client_updates_live(push,pull,conflicts):
+    local_meta = load_metadata('.blackjay/metadata')
+    # for pushes which were accepted, update local metadata
+    for name,meta in push.items():
+        local_meta[name] = meta
+    # for pulls which were accepted, move file and update local metadata
+    for name,meta in pull.items():
+        local_meta[name] = meta
+        if meta['del_flag'] is False:
+            os.rename(os.path.join('.blackjay/s2c',name),name)
+    # for conflicts, move file to conflict-styled name
+    #for name,meta in pull.items():
+    #    local_meta[name] = meta
+    #    os.rename(os.path.join('.blackjay/s2c',name),name+'.server_copy')
+
+def cleanup_client_temp_files():
+    os.remove('.blackjay/c2s.zip')
+    os.remove('.blackjay/s2c.zip')
     shutil.rmtree('.blackjay/s2c')
 
 def cleanup_server_temp_files(UID):
-    os.rm('.blackjay/c2s'+UID+'.zip')
-    os.rm('.blackjay/s2c'+UID+'.zip')
-    shutil.rmtree('.blackjay/s2c'+UID+'')
+    os.remove('.blackjay/c2s'+UID+'.zip')
+    os.remove('.blackjay/s2c'+UID+'.zip')
+    shutil.rmtree('.blackjay/c2s'+UID+'')
