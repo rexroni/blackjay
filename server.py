@@ -107,6 +107,8 @@ def push_update(ip, port, filename):
         else:
             send_file(filename, sock)
 
+        sock.close()
+
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     def handle(self):
         data = recv_all(self.request)
@@ -128,8 +130,6 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 def main():
     if len(sys.argv) > 1:
         os.chdir(sys.argv[1])
-    else:
-        os.chdir("s")
     if os.path.isdir('.blackjay') is not True:
         if len(os.listdir()) == 0:
             print('looks like a new installation.  Initializing...')
@@ -157,10 +157,10 @@ def main():
         server_thread.start()
         print("Server loop running in thread:", server_thread.name)
 
-        meta = metadata_req(ip, port)
-        print("metadata: {}".format(meta))
+        # meta = metadata_req(ip, port)
+        # print("metadata: {}".format(meta))
 
-        push_update(ip, port, "trash.zip")
+        # push_update(ip, port, "trash.zip")
 
         try:
             while True:
