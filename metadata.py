@@ -84,6 +84,8 @@ def get_updated_local_metadata():
 # 9 |true  |false |false |true  | push to server
 # A |true  |false |true  |false | conflict!
 # B |   (none)    |true  |false | new file, pull from server
+# C |   (none)    |false |true  | file was pushed and deleted by another client,
+#                                    pull metadata from server
 
 def compare_metadata(localmeta,remotemeta):
     ignore_patterns = load_ignore_patterns()
@@ -123,10 +125,11 @@ def compare_metadata(localmeta,remotemeta):
             files_to_push[name] = local
             continue
         if local_update and remote_update:
-#A          # found a conflict, but this conflict could be in one of three states
+#A          # found a conflict, but this conflict could be in one of four states
             # new conflict (was_confl == false)
             # resume conflict (was_confl == true, conflict file exists)
             # resolve conflict (was_confl == true, conflict file removed)
+            # another update to server while you were editing (ignore this for now)
 
             print('Conflict on %s'%(name))
             local['was_confl'] = True
@@ -153,7 +156,7 @@ def compare_metadata(localmeta,remotemeta):
             files_to_push[name] = local
             continue
 #2     # if all false, do nothing
-#B  # also check for new files at remote
+#B,C: also check for new files at remote
     for name,remote in remotemeta.items():
         if localmeta.get(name,None) is None:
             files_to_pull[name] = remote
