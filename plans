@@ -51,10 +51,10 @@ whats left:
 
 bugs:
     watchdog fires after syncing happens
-    missing deletion events
-    conflicts can happen on identical files
     lots of empty syncs
-    make server conflict files read-only
+    conflicts can happen on identical files
+    file encryption completed
+    ssh tunneling working
 
 
 
