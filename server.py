@@ -145,7 +145,7 @@ def main():
         #     exit(1)
 
     # Port 0 means to select an arbitrary unused port
-    HOST, PORT = socket.gethostname(), 12345
+    HOST, PORT = '', 12345
 
     server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
     with server:
