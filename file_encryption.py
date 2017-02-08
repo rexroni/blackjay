@@ -1,8 +1,25 @@
 import os
-from Crypto.Cipher import Blowfish
+from Crypto.Cipher import Blowfish,AES
+from Crypto.Hash import HMAC,SHA512
+
+def get_hash_HMAC(password, plainf):
+    hasher = SHA512.new()
+    hmacer = HMAC.new(password, hasher)
+    BLOCKSIZE = 65536
+    with open(plainf,'rb') as plain:
+        buf = plain.read(BLOCKSIZE)
+        while len(buf) > 0:
+            hasher.update(buf)
+            hmacer.update(buf)
+    return hasher.hexdigest(),hmacer.hexdigest()
 
 def fresh_cipher(password, iv):
     return Blowfish.new(password, Blowfish.MODE_CBC, iv)
+
+def fresh_aes_cipher(password, iv):
+    return Blowfish.new(password, Blowfish.MODE_CBC, iv)
+############################## you are testing AES file encryption
+    return AES.new(password*4, AES.MODE_CBC, iv*2)
 
 def encrypt_file(plainf,secretf,password):
     size = os.stat(plainf).st_size
@@ -74,4 +91,18 @@ def blowfish_test():
     secret = cipher.encrypt(pad_data(data,bs))
 
     cipher= Blowfish.new(b'password', Blowfish.MODE_CBC, iv)
+    print(unpad_data(cipher.decrypt(secret)))
+
+def AES_test():
+    bs = AES.block_size
+    # this is just for testing:
+    iv = b'init-vecinit-vec'
+    cipher= AES.new(b'passwordpasswordpasswordpassword',AES.MODE_CBC, iv)
+
+    data = b'akeihfoai 3jo823up 8u3pro8u23n ocqumpoa93 urao3wu5vq2'
+
+    print(data)
+    secret = cipher.encrypt(pad_data(data,bs))
+
+    cipher= AES.new(b'passwordpasswordpasswordpassword',AES.MODE_CBC, iv)
     print(unpad_data(cipher.decrypt(secret)))

@@ -1,4 +1,5 @@
 import os
+import stat
 import shutil
 from zipfile import ZipFile
 from metadata import *
@@ -81,7 +82,11 @@ def make_client_updates_live(push,pull,conflicts):
     # for conflicts, move file to conflict-styled name
     for name,meta in conflicts.items():
         local_meta[name] = meta
-        os.rename(os.path.join('.blackjay/s2c',name),conflict_name(name))
+        cname = conflict_name(name)
+        os.rename(os.path.join('.blackjay/s2c',name),cname)
+        # make file read-only
+        mode = os.stat(cname).st_mode
+        os.chmod(cname, mode & ~(stat.S_IWUSR | stat.S_IWGRP | stat.S_IWOTH))
     write_metadata(local_meta,'.blackjay/metadata')
 
 def cleanup_client_temp_files():
