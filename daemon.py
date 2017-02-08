@@ -30,12 +30,16 @@ class SyncHandler(FileSystemEventHandler):
             path/to/observed/file
         """
         # the file will be processed there
-        pprint( (event.src_path, event.event_type) ) # print now only for degug
+        # pprint( (event.src_path, event.event_type) ) # print now only for degug
 
         if type(event) == watchdog.events.DirModifiedEvent:
             #print('ignoring dir modified event')
             return
-        if should_ignore(event.src_path,load_ignore_patterns()):
+        # now skip anything that matches ignore patterns, except deleting a server_version file
+        if should_ignore(event.src_path, ['/.*\.server_copy[^/]*']) \
+          and event.event_type == 'deleted':
+            pass
+        elif should_ignore(event.src_path,load_ignore_patterns()):
             #print('ignoring file: ',event.src_path)
             return
         print('syncing due to',event.src_path)

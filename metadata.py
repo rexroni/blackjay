@@ -17,7 +17,7 @@ def hash_file(f):
 
 def conflict_name(name):
     # mangles '.server_copy' after the name but before the extension
-    return re.sub('((?:\.[^.]*)?$)','.server_copy\\1',name)
+    return re.sub('((?:\.[^/.]*)?$)','.server_copy\\1',name)
 
 def write_metadata(meta,filename):
     f = open(filename,'w')
@@ -52,12 +52,11 @@ def get_updated_local_metadata():
                 continue
             ### otherwise, we have a new file:
             found_an_update = True
-            # "Hash At Last Sync"
-            hals = 'never hashed'
-            # mtime at last sync (not yet synced)
+            # hmac and mtime at last sync (not yet synced)
+            hmac = 'none yet'
             mtime = 0
             meta[name] = { 'mtime':mtime,
-                           'hals':hals,
+                           'hmac':hmac,
                            'del_flag':False,
                            'was_confl':False,
                            'confl_mtime':0 }
@@ -100,7 +99,6 @@ def compare_metadata(localmeta,remotemeta):
         if remote is None:
  #1         # this is a new file, push it
             local['mtime'] = os.stat(name).st_mtime
-            local['hals'] = hash_file(name)
             files_to_push[name] = local
             continue
         local_delete = local['del_flag'] and not os.path.exists(name)
@@ -121,20 +119,41 @@ def compare_metadata(localmeta,remotemeta):
         if local_update and remote_delete:
 #9          # if there's a local update, push it back to the server
             local['mtime'] = os.stat(name).st_mtime
-            local['hals'] = hash_file(name)
             files_to_push[name] = local
             continue
         if local_update and remote_update:
-#A          # found a conflict, but this conflict could be in one of four states
-            # new conflict (was_confl == false)
-            # resume conflict (was_confl == true, conflict file exists)
-            # resolve conflict (was_confl == true, conflict file removed)
-            # another update to server while you were editing (ignore this for now)
-
+#A          # found a conflict, but this conflict could be in one of four states:
             print('Conflict on %s'%(name))
-            local['was_confl'] = True
-            local['confl_mtime'] = remote['mtime']
-            conflicts[name] = local
+            # State 1) new conflict (was_confl == false)
+            if local['was_confl'] is False:
+                # add to conflicts list, we will pull it from the server
+                print('cstate 1')
+                local['was_confl'] = True
+                local['confl_mtime'] = remote['mtime']
+                conflicts[name] = local
+            # State 2) old conflict, no update (was_confl == true, conflict file exists)
+            elif local['was_confl'] is True and os.path.exists(conflict_name(name)) is True:
+                # no need to do anything until user deletes the server_version file
+                print('cstate 2')
+                pass
+            # State 3) resolve conflict (was_confl == true, conflict file removed)
+            elif local['was_confl'] is True and os.path.exists(conflict_name(name)) is False:
+                # Did the user deconflict against the most current version?
+                if local['confl_mtime'] == remote['mtime']:
+                    print('cstate 3')
+                    local['was_confl'] = False
+                    local['confl_mtime'] = 0
+                    local['mtime'] = os.stat(name).st_mtime
+                    files_to_push[name] = local
+                else:
+                    print('cstate 4')
+                    print('Oh no! you deconflicted against a version that is now old!')
+                    print('sorry, you must deconflict again...')
+                    # get ready to download another server version
+                    local['was_confl'] = True
+                    local['confl_mtime'] = remote['mtime']
+                    conflicts[name] = local
+            # State 4) another update to server while you were editing (ignore this for now)
             continue
 ### check conditions with one true (3,4,5,8)
         if remote_delete:
@@ -152,7 +171,6 @@ def compare_metadata(localmeta,remotemeta):
         if local_update:
 #8          # push to server
             local['mtime'] = os.stat(name).st_mtime
-            local['hals'] = hash_file(name)
             files_to_push[name] = local
             continue
 #2     # if all false, do nothing

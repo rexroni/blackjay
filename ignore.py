@@ -3,7 +3,7 @@ import re
 default_ignore_file = '''# the blackjay directory
 .blackjay/
 # conflicted file copies
-*.
+*.server_copy*
 # vim temporary files
 .*.swp
 .*.swo

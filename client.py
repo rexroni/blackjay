@@ -6,6 +6,7 @@ import server
 import json
 from metadata import *
 from archiver import *
+from time import sleep
 
 g_ip = '127.0.1.1'
 g_po = 12345
@@ -14,6 +15,8 @@ def get_remote_metadata(ip,port):
     return json.loads(server.metadata_req(ip,port))
 
 def synchronize(remoteroot,force_pull=False):
+    # debounce timeout
+    sleep(.3)
     global g_ip, g_po
     local_meta, any_updates = get_updated_local_metadata()
     print('any updates?',any_updates)

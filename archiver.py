@@ -78,11 +78,11 @@ def make_client_updates_live(push,pull,conflicts):
         local_meta[name] = meta
         if meta['del_flag'] is False:
             os.rename(os.path.join('.blackjay/s2c',name),name)
-    write_metadata(local_meta,'.blackjay/metadata')
     # for conflicts, move file to conflict-styled name
-    #for name,meta in pull.items():
-    #    local_meta[name] = meta
-    #    os.rename(os.path.join('.blackjay/s2c',name),name+'.server_copy')
+    for name,meta in conflicts.items():
+        local_meta[name] = meta
+        os.rename(os.path.join('.blackjay/s2c',name),conflict_name(name))
+    write_metadata(local_meta,'.blackjay/metadata')
 
 def cleanup_client_temp_files():
     os.remove('.blackjay/c2s.zip')
