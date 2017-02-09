@@ -51,10 +51,13 @@ whats left:
 
 bugs:
     watchdog fires after syncing happens
-    lots of empty syncs
-    conflicts can happen on identical files
+    lots of empty syncs (maybe just better timeouts)
     file encryption completed
-    ssh tunneling working
+    ssh stdin/out ssh forwarding
+    README for basic setup
+    writing to conflicted file shouldn't set found_update=true while comflict file exists
+    very small files only have a few different hmac/md5sum options, and it is obvious they are so small
+
 
 
 

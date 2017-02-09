@@ -2,16 +2,15 @@ import os
 from Crypto.Cipher import Blowfish,AES
 from Crypto.Hash import HMAC,SHA512
 
-def get_hash_HMAC(password, plainf):
-    hasher = SHA512.new()
-    hmacer = HMAC.new(password, hasher)
+def get_hmac(plainf, password):
+    hmacer = HMAC.new(password, digestmod=SHA512)
     BLOCKSIZE = 65536
     with open(plainf,'rb') as plain:
-        buf = plain.read(BLOCKSIZE)
+        buf = 'empty'
         while len(buf) > 0:
-            hasher.update(buf)
+            buf = plain.read(BLOCKSIZE)
             hmacer.update(buf)
-    return hasher.hexdigest(),hmacer.hexdigest()
+    return hmacer.hexdigest()
 
 def fresh_cipher(password, iv):
     return Blowfish.new(password, Blowfish.MODE_CBC, iv)
