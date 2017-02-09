@@ -170,7 +170,7 @@ class SyncHandler(FileSystemEventHandler):
         synchronize()
         print('')
 
-def main()
+def main():
     global config, tunnel
     if len(sys.argv) == 2:
         os.chdir(sys.argv[1])
@@ -194,6 +194,7 @@ def main()
         global_port = int(config['port'])
 
     # start watching files
+    print('Client running... watching for changes')
     observer = Observer()
     observer.schedule(SyncHandler(), '.', recursive=True)
     observer.start()
