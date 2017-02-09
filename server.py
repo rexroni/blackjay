@@ -81,21 +81,22 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
 
 def main():
+    serverport = 12345 # default value
+
     if len(sys.argv) > 1:
         os.chdir(sys.argv[1])
+    if len(sys.argv) > 2:
+        serverport = int(sys.argv[2])
+
     if os.path.isdir('.blackjay') is not True:
         if len(os.listdir()) == 0:
             print('looks like a new installation.  Initializing...')
             os.mkdir('.blackjay')
             os.mkdir('.blackjay/tmp')
             open('.blackjay/metadata','a').close()
-        # else:
-        #     print('looks like restoring an old installation...')
-        #     print('... I don\'t know how to do that yet!!')
-        #     exit(1)
 
     # Port 0 means to select an arbitrary unused port
-    HOST, PORT = '', 12345
+    HOST, PORT = '', serverport
 
     server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
     with server:
