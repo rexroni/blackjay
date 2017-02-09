@@ -9,21 +9,19 @@ def recv_all(sock):
     total_len = 0; payload_data = b''; size = 0
     size_data = sock_data = b''
     len_data = b''; len_size = 0
+    sock.setblocking(1)
     # get the length field size
-    while not len_size:
-        sock_data = sock.recv(1)
-        if len(sock_data)>0:
-            len_size = sock_data[0]
+    len_size = ord(sock.recv(1))
 
     # get the length field
     while len(len_data) < len_size:
         len_data += sock.recv(len_size-len(len_data))
-        if len(len_data) == len_size:
-            size = int(len_data[:len_size])
+
+    size = int(len_data)
 
     # get the data
     while len(payload_data) < size:
-        payload_data += sock.recv(min(size-total_len, 65536))
+        payload_data += sock.recv(min(size-total_len, 2048))
 
     return payload_data
 
@@ -32,10 +30,10 @@ def send_file(filename, sock):
     print("send_file: file size: {}".format(size), flush=True)
     with open(filename, 'rb') as f:
         send_size(size, sock)
-        data = f.read(65536)
+        data = f.read(2048)
         while data:
             send_size(data, sock)
-            data = f.read(65536)
+            data = f.read(2048)
 
 def progress_bar(completed, size):
     width = 60
@@ -67,7 +65,17 @@ def send_size(data, sock):
     len_str = "{}".format(len(data))
     len_str_size = chr(len(len_str))
     send_data = bytes(len_str_size+len_str, 'ascii')+data
-    sock.sendall(send_data)
+    total_sent = 0
+    errors = 0
+    total_len = len(send_data)
+    sock.setblocking(1)
+    while total_sent < total_len:
+        data_sent = sock.send(send_data[total_sent:])
+        if data_sent < total_len:
+            print('error',data_sent,flush=True)
+            errors += 1
+        total_sent += data_sent
+    #sock.sendall(send_data)
 
 def client_req(ip, port, message):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
@@ -75,6 +83,7 @@ def client_req(ip, port, message):
         sock.connect((ip, port))
         send_size(message, sock)
         response = recv_all(sock)
+        sock.shutdown(socket.SHUT_RDWR)
         sock.close()
         return response
 
@@ -96,4 +105,5 @@ def push_update(ip, port, filename):
             send_file(filename, sock)
             recv_file('.blackjay/s2c.zip', sock)
 
+        sock.shutdown(socket.SHUT_RDWR)
         sock.close()
