@@ -1,5 +1,5 @@
 import os
-from Crypto.Cipher import Blowfish,AES
+from Crypto.Cipher import Blowfish
 from Crypto.Hash import HMAC,SHA512
 
 def get_hmac(plainf, password):
@@ -12,13 +12,14 @@ def get_hmac(plainf, password):
             hmacer.update(buf)
     return hmacer.hexdigest()
 
+def add_hmacs_to_metadata(push,password):
+    for name,meta in push.items():
+        if meta['del_flag'] is False:
+            push[name]['hmac'] = get_hmac(name, password)
+    return push
+
 def fresh_cipher(password, iv):
     return Blowfish.new(password, Blowfish.MODE_CBC, iv)
-
-def fresh_aes_cipher(password, iv):
-    return Blowfish.new(password, Blowfish.MODE_CBC, iv)
-############################## you are testing AES file encryption
-    return AES.new(password*4, AES.MODE_CBC, iv*2)
 
 def encrypt_file(plainf,secretf,password):
     size = os.stat(plainf).st_size
@@ -33,6 +34,7 @@ def encrypt_file(plainf,secretf,password):
     cipher = fresh_cipher(password, iv)
     # write all but the last block without padding
     block = 0;
+    print('encrypting',plainf)
     while block < lastblock:
         buf = plain.read(BLOCKSIZE)
         secret.write(cipher.encrypt(buf))
@@ -41,6 +43,7 @@ def encrypt_file(plainf,secretf,password):
     buf = plain.read()
     secret.write(cipher.encrypt(pad_data(buf,8)))
     print('reading %d bytes, %d%% complete     \r'%(len(buf),block/lastblock*100),end='')
+    print('')
     plain.close()
     secret.close()
 
@@ -57,6 +60,7 @@ def decrypt_file(secretf,plainf,password):
     cipher = fresh_cipher(password, iv)
     # all but the last block are without padding
     block = 0;
+    print('decrypting',plainf)
     while block < lastblock:
         buf = secret.read(BLOCKSIZE)
         plain.write(cipher.decrypt(buf))
@@ -65,6 +69,7 @@ def decrypt_file(secretf,plainf,password):
     buf = secret.read()
     plain.write(unpad_data(cipher.decrypt(buf)))
     print('writing %d bytes, %d%% complete     \r'%(len(buf),block/lastblock*100),end='')
+    print('')
     plain.close()
     secret.close()
 
@@ -90,18 +95,4 @@ def blowfish_test():
     secret = cipher.encrypt(pad_data(data,bs))
 
     cipher= Blowfish.new(b'password', Blowfish.MODE_CBC, iv)
-    print(unpad_data(cipher.decrypt(secret)))
-
-def AES_test():
-    bs = AES.block_size
-    # this is just for testing:
-    iv = b'init-vecinit-vec'
-    cipher= AES.new(b'passwordpasswordpasswordpassword',AES.MODE_CBC, iv)
-
-    data = b'akeihfoai 3jo823up 8u3pro8u23n ocqumpoa93 urao3wu5vq2'
-
-    print(data)
-    secret = cipher.encrypt(pad_data(data,bs))
-
-    cipher= AES.new(b'passwordpasswordpasswordpassword',AES.MODE_CBC, iv)
     print(unpad_data(cipher.decrypt(secret)))

@@ -6,6 +6,7 @@ import server
 import json
 from metadata import *
 from archiver import *
+from file_encryption import *
 from time import sleep
 
 g_ip = '127.0.0.1'
@@ -32,6 +33,7 @@ def synchronize(remoteroot,force_pull=False):
     print('pushing',push)
     print('pulling',pull)
     print('conflicts',conflicts)
+    push = add_hmacs_to_metadata(push, b'password')
     prep_client_to_server_archive(push, pull, conflicts, b'password')
     print('pushing update')
     server.push_update(g_ip,g_po,'.blackjay/c2s.zip')
