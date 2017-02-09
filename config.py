@@ -2,7 +2,10 @@ import configparser
 import os, sys
 import getpass
 
+from ignore import default_ignore_file
+
 def enter_password():
+    print("Enter password for file encryption")
     pprompt = lambda: (getpass.getpass(), getpass.getpass('Retype password: '))
     while True:
         p1, p2 = pprompt()
@@ -48,6 +51,11 @@ def get_config(configpath = None):
     if os.path.isdir('.blackjay') is not True:
         print('Looks like a new install... creating a .blackjay folder')
         os.mkdir('.blackjay')
+        open('.blackjay/metadata','a').close()
+        # start with sane defaults in ignore file
+        ignf = open('.blackjay/ignore','w')
+        ignf.write(default_ignore_file)
+        ignf.close()
 
     if os.path.exists(configpath) is not True:
         print('Setting up a new config file at {}'.format(configpath))
