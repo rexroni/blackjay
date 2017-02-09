@@ -1,45 +1,4 @@
-state machine:
-
-situation:      solution:
-lu ru:          pull file.server_version.ext as read-only file
-lu rd:          just push file back
-ld ru:          pull remote update
-ld rd:          we're good
-
-metadata for each file on server:
-hash during last sync
-
-metadata for each file on client:
-hash at last sync (HALS)
-time of last update
-deletion flag
-was_conflicted
-
-sync protocol:
-    client already has list of local updates/deletions
-    client connects to server
-    server sends all metadata
-    client calculates conflicts
-    client dictates which files go where
-
-all conflicts are of the form:
-    local file's HALS is different than server's file's TOLS
-
-Never push a file if it's file.server_version exists
-the first time you detect file.server_version is deleted, force push
-
-
-
-modules:
-    server.py: daemon, server side
-
-    client.py: communication with server
-
-    daemon.py: daemon, client side: watches files, initiates push/pulls
-
-    file_encryption.py: give it a file, it hands back an encrypted file
-
-bugs:
+bugs / missing features:
     README for basic setup
     very small files only have a few different hmac/md5sum options, and it is obvious they are so small
     how does licensing work with other people's code
@@ -50,11 +9,6 @@ bugs:
     timeout after watchdog fires before it fires again
     there is no atomic functionality to sever connections right now
 
-
-
-
-
-
 # protocol steps:
 #    client says:                  server says:
 #--------------------------------------------------------------
@@ -63,21 +17,3 @@ bugs:
 #3   here are changes/pullreqs
 #4                                 Here are files / I am honoring these changes
 #                     (both write to files)
-
-
-## This is what archiver does:
-file system on:
-      client:                       server:
-
-1      <empty>                      <empty>
-
-2      <empty>                      <empty>
-
-3   .blackjay                       .blackjay
-      `-c2s.zip    >>>>>>>>>>>>>      |-c2sUID.zip
-                                      `-c2sUID/
-
-4   .blackjay                       .blackjay
-      |-c2s.zip                       |-c2sUID.zip
-      |-s2c.zip                       |-c2sUID/
-      `-s2c/       <<<<<<<<<<<<<      `-s2cUID.zip
