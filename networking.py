@@ -6,10 +6,8 @@ prepare_message = b"prepare to receive all my acorns"
 prepare_response = b"send your worst"
 
 def recv_all(sock):
-    total_len = 0; payload_data = b''; size = 0
-    size_data = sock_data = b''
+    payload_data = b''; size = 0
     len_data = b''; len_size = 0
-    sock.setblocking(1)
     # get the length field size
     len_size = ord(sock.recv(1))
 
@@ -21,7 +19,7 @@ def recv_all(sock):
 
     # get the data
     while len(payload_data) < size:
-        payload_data += sock.recv(min(size-total_len, 2048))
+        payload_data += sock.recv(min(size-len(payload_data), 2048))
 
     return payload_data
 
@@ -66,14 +64,9 @@ def send_size(data, sock):
     len_str_size = chr(len(len_str))
     send_data = bytes(len_str_size+len_str, 'ascii')+data
     total_sent = 0
-    errors = 0
     total_len = len(send_data)
-    sock.setblocking(1)
     while total_sent < total_len:
         data_sent = sock.send(send_data[total_sent:])
-        if data_sent < total_len:
-            print('error',data_sent,flush=True)
-            errors += 1
         total_sent += data_sent
     #sock.sendall(send_data)
 

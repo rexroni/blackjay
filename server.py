@@ -63,7 +63,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             send_size(json.dumps(load_metadata(".blackjay/metadata")), self.request)
         elif data == prepare_message:
             send_size(prepare_response, self.request)
-            UID = str(cur_thread.getName)
+            UID = str(cur_thread.getName())
             zipfile = '.blackjay/c2s{}.zip'.format(UID)
             recv_file(zipfile, self.request)
             print("Like a boss")
