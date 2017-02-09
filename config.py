@@ -93,8 +93,10 @@ def get_config(configpath = None):
 
     with open(configpath, 'w') as configfile:
         config.write(configfile)
-        
-    return dict(config.items('blackjay'))
+
+    ret_val = dict(config.items('blackjay'))
+    ret_val['password'] = ret_val['password'].encode('utf8')
+    return ret_val
 
 
 def main():

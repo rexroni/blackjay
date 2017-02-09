@@ -50,13 +50,15 @@ whats left:
 
 
 bugs:
-    watchdog fires after syncing happens
-    lots of empty syncs (maybe just better timeouts)
-    file encryption completed
-    ssh stdin/out ssh forwarding
     README for basic setup
-    writing to conflicted file shouldn't set found_update=true while comflict file exists
     very small files only have a few different hmac/md5sum options, and it is obvious they are so small
+    how does licensing work with other people's code
+    need a rescue function (decrypt a whole tree of server stuff based on password)
+    encrypted filenames
+    need password checks
+    more error checking on socket comms?
+    timeout after watchdog fires before it fires again
+
 
 
 
