@@ -1,4 +1,5 @@
 import os
+import binascii
 from Crypto.Cipher import Blowfish
 from Crypto.Hash import HMAC,SHA512
 
@@ -21,7 +22,13 @@ def add_hmacs_to_metadata(push,password):
 def fresh_cipher(password, iv):
     return Blowfish.new(password, Blowfish.MODE_CBC, iv)
 
-def encrypt_file(plainf,secretf,password):
+def gen_iv(name,mtime,iv_len):
+    hasher = SHA512.new()
+    hasher.update(('%s-%d'%(name,mtime)).encode('utf8'))
+    print ('%s-%s-%d'%(name,md5sum,mtime))
+    return binascii.unhexlify(hasher.hexdigest())[:iv_len]
+
+def encrypt_file(plainf,secretf,iv,password):
     size = os.stat(plainf).st_size
     BLOCKSIZE = 65536
     # figure out which the last block is (that we need to pad)
@@ -29,8 +36,6 @@ def encrypt_file(plainf,secretf,password):
     # open files
     plain = open(plainf,'rb')
     secret = open(secretf,'wb')
-    # init cipher
-    iv = b'init-vec'
     cipher = fresh_cipher(password, iv)
     # write all but the last block without padding
     block = 0;
@@ -46,8 +51,11 @@ def encrypt_file(plainf,secretf,password):
     print('')
     plain.close()
     secret.close()
+    # preserve access times
+    st = os.stat(plainf)
+    os.utime(secretf,st.(st_atime,st.st_mtime))
 
-def decrypt_file(secretf,plainf,password):
+def decrypt_file(secretf,plainf,iv,password):
     size = os.stat(secretf).st_size
     BLOCKSIZE = 65536
     # figure out which the last block is (that we need to pad)
@@ -55,8 +63,6 @@ def decrypt_file(secretf,plainf,password):
     # open files
     secret = open(secretf,'rb')
     plain = open(plainf,'wb')
-    # init cipher
-    iv = b'init-vec'
     cipher = fresh_cipher(password, iv)
     # all but the last block are without padding
     block = 0;
@@ -72,6 +78,9 @@ def decrypt_file(secretf,plainf,password):
     print('')
     plain.close()
     secret.close()
+    # preserve access times
+    st = os.stat(secretf)
+    os.utime(plainf,st.(st_atime,st.st_mtime))
 
 def pad_data(data, bs):
     pad_len = bs - (len(data) % bs)
