@@ -50,15 +50,14 @@ whats left:
 
 
 bugs:
-    watchdog fires after syncing happens(maybe just better timeouts)
-    file encryption completed
     README for basic setup
     very small files only have a few different hmac/md5sum options, and it is obvious they are so small
-    file encryption completed
     how does licensing work with other people's code
     need a rescue function (decrypt a whole tree of server stuff based on password)
     encrypted filenames
     need password checks
+    more error checking on socket comms?
+    timeout after watchdog fires before it fires again
 
 
 

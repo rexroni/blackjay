@@ -22,17 +22,17 @@ def add_hmacs_to_metadata(push,password):
 def fresh_cipher(password, iv):
     return Blowfish.new(password, Blowfish.MODE_CBC, iv)
 
-def gen_iv(name,mtime,iv_len):
+def gen_iv(name,mtime):
     hasher = SHA512.new()
     hasher.update(('%s-%d'%(name,mtime)).encode('utf8'))
-    print ('%s-%s-%d'%(name,md5sum,mtime))
-    return binascii.unhexlify(hasher.hexdigest())[:iv_len]
+    return binascii.unhexlify(hasher.hexdigest())[:Blowfish.block_size]
 
 def encrypt_file(plainf,secretf,iv,password):
     size = os.stat(plainf).st_size
     BLOCKSIZE = 65536
     # figure out which the last block is (that we need to pad)
     lastblock = int(size/BLOCKSIZE) if size % BLOCKSIZE != 0 else int(size / BLOCKSIZE) - 1
+    if lastblock < 0: lastblock = 0
     # open files
     plain = open(plainf,'rb')
     secret = open(secretf,'wb')
@@ -43,23 +43,26 @@ def encrypt_file(plainf,secretf,iv,password):
     while block < lastblock:
         buf = plain.read(BLOCKSIZE)
         secret.write(cipher.encrypt(buf))
-        print('reading %d bytes, %d%% complete     \r'%(len(buf),block/lastblock*100),end='')
+        print('reading %d bytes, %d%% complete     \r'%(len(buf),
+                                        (block+1)/(lastblock+1)*100),end='')
         block += 1
     buf = plain.read()
     secret.write(cipher.encrypt(pad_data(buf,8)))
-    print('reading %d bytes, %d%% complete     \r'%(len(buf),block/lastblock*100),end='')
+    print('reading %d bytes, %d%% complete     \r'%(len(buf),
+                                    (block+1)/(lastblock+1)*100),end='')
     print('')
     plain.close()
     secret.close()
     # preserve access times
     st = os.stat(plainf)
-    os.utime(secretf,st.(st_atime,st.st_mtime))
+    os.utime(secretf,(st.st_atime,st.st_mtime))
 
 def decrypt_file(secretf,plainf,iv,password):
     size = os.stat(secretf).st_size
     BLOCKSIZE = 65536
     # figure out which the last block is (that we need to pad)
     lastblock = int(size/BLOCKSIZE) if size % BLOCKSIZE != 0 else int(size / BLOCKSIZE) - 1
+    if lastblock < 0: lastblock = 0
     # open files
     secret = open(secretf,'rb')
     plain = open(plainf,'wb')
@@ -70,17 +73,19 @@ def decrypt_file(secretf,plainf,iv,password):
     while block < lastblock:
         buf = secret.read(BLOCKSIZE)
         plain.write(cipher.decrypt(buf))
-        print('writing %d bytes, %d%% complete     \r'%(len(buf),block/lastblock*100),end='')
+        print('writing %d bytes, %d%% complete     \r'%(len(buf),
+                                        (block+1)/(lastblock+1)*100),end='')
         block += 1
     buf = secret.read()
     plain.write(unpad_data(cipher.decrypt(buf)))
-    print('writing %d bytes, %d%% complete     \r'%(len(buf),block/lastblock*100),end='')
+    print('writing %d bytes, %d%% complete     \r'%(len(buf),
+                                    (block+1)/(lastblock+1)*100),end='')
     print('')
     plain.close()
     secret.close()
     # preserve access times
     st = os.stat(secretf)
-    os.utime(plainf,st.(st_atime,st.st_mtime))
+    os.utime(plainf,(st.st_atime,st.st_mtime))
 
 def pad_data(data, bs):
     pad_len = bs - (len(data) % bs)
@@ -91,17 +96,3 @@ def unpad_data(data):
     pad_len = data[-1]
     #print('un pad_len %d'%pad_len)
     return data[:-pad_len]
-
-def blowfish_test():
-    bs = Blowfish.block_size
-    # this is just for testing:
-    iv = b'init-vec'
-    cipher= Blowfish.new(b'password', Blowfish.MODE_CBC, iv)
-
-    data = b'akeihfoai 3jo823up 8u3pro8u23n ocqumpoa93 urao3wu5vq2'
-
-    print(data)
-    secret = cipher.encrypt(pad_data(data,bs))
-
-    cipher= Blowfish.new(b'password', Blowfish.MODE_CBC, iv)
-    print(unpad_data(cipher.decrypt(secret)))
