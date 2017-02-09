@@ -171,7 +171,7 @@ class SyncHandler(FileSystemEventHandler):
         print('')
 
 def main():
-    global config, tunnel
+    global config, tunnel, global_ip, global_port
     if len(sys.argv) == 2:
         os.chdir(sys.argv[1])
     else:
