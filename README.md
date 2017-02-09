@@ -36,6 +36,17 @@ Blackjay is:
   + > pip install watchdog pycrypto sshtunnel
 + Download our project from https://github.com/rexroni/blackjay/tree/dev (Green button on right "Clone or download" -> "Download ZIP")
 
+## windows client/server local test
+1. Open two cmd.exe windows and cd to the directory you extracted the project zip into
++ Create two folders
+  + > mkdir client
+  + > mkdir server
++ Run the client and server in each of the two cmd.exe windows:
+  + > python client.py client
+  + > python server.py server
++ Select all the defaults for the client config (localhost, 12345, password)  Password should be atleast 8 bits long but for testing it will just be saved into a config file and you won't have to edit it again.
++ Test that you can place files in the client directory and edit them and the changes sync into the server directory correctly.
+
 ##\* Future Plans:
 * Currently, only the file data is encrypted.  "Envelope" information, such as the filename, modification time, or file size, are readily visible on the server, but in future versions blackjay hopes to offer even more privacy.  Even now, full privacy can be secured by running the server on a local machine, even a Raspberry PI
 * Many non-security design decisions were made in order to have a functional application, instead of a perfect application.  Future versions of blackjay will be more resource efficient.

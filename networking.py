@@ -23,7 +23,7 @@ def recv_all(sock):
 
     # get the data
     while len(payload_data) < size:
-        payload_data += sock.recv(min(size-total_len, 2048))
+        payload_data += sock.recv(min(size-total_len, 65536))
 
     return payload_data
 
@@ -32,10 +32,10 @@ def send_file(filename, sock):
     print("send_file: file size: {}".format(size), flush=True)
     with open(filename, 'rb') as f:
         send_size(size, sock)
-        data = f.read(2048)
+        data = f.read(65536)
         while data:
             send_size(data, sock)
-            data = f.read(2048)
+            data = f.read(65536)
 
 def progress_bar(completed, size):
     width = 60
@@ -71,6 +71,7 @@ def send_size(data, sock):
 
 def client_req(ip, port, message):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        print("Trying to connect on : {}".format((ip,port)))
         sock.connect((ip, port))
         send_size(message, sock)
         response = recv_all(sock)
