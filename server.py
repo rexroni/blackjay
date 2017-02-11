@@ -1,5 +1,4 @@
 import threading
-import socketserver
 import time
 import sys
 import json
@@ -54,31 +53,31 @@ def cleanup_server_temp_files(UID):
     os.remove('.blackjay/s2c'+UID+'.zip')
     shutil.rmtree('.blackjay/c2s'+UID+'')
 
-class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
-    def handle(self):
-        data = recv_all(self.request)
-        cur_thread = threading.current_thread()
+class handle_connection(threading.Thread):
+    def __init__ ( self, sock):
+       self.sock = sock
+       threading.Thread.__init__ ( self )
+
+    def run(self):
+        data = recv_all(self.sock)
         response = 'you fucked up'
         if data == metadata_req_message:
-            send_size(json.dumps(load_metadata(".blackjay/metadata")), self.request)
+            send_size(json.dumps(load_metadata(".blackjay/metadata")), self.sock)
         elif data == prepare_message:
-            send_size(prepare_response, self.request)
-            UID = str(cur_thread.getName())
+            send_size(prepare_response, self.sock)
+            UID = str(time.time())
             zipfile = '.blackjay/c2s{}.zip'.format(UID)
-            recv_file(zipfile, self.request)
+            recv_file(zipfile, self.sock)
             print("Like a boss")
             push, pull, conflicts = extract_client_to_server_archive(zipfile,UID)
             # right now, accept every acorn!
             resp_zipname = prep_server_to_client_archive(push, pull, conflicts, UID)
-            send_file(resp_zipname, self.request)
+            send_file(resp_zipname, self.sock)
             make_server_updates_live(push,UID)
             cleanup_server_temp_files(UID)
         else:
-            send_size('you fucked up', self.request)
-        self.request.close()
-
-class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
-    pass
+            send_size('you fucked up', self.sock)
+        self.sock.close()
 
 def main():
     serverport = 12345 # default value
@@ -97,33 +96,18 @@ def main():
 
     # Port 0 means to select an arbitrary unused port
     HOST, PORT = '', serverport
+    listener = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    listener.bind((HOST,PORT))
+    listener.listen(5)
+    try:
+        while True:
+            conn,addr = listener.accept()
+            handle_connection(conn).start()
+    except KeyboardInterrupt:
+        print("Shutting down")
 
-    server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
-    with server:
-        ip, port = server.server_address
-        print("Server running at hostname: {}, ip: {}, port: {}".format(HOST,ip, port))
 
-        # Start a thread with the server -- that thread will then start one
-        # more thread for each request
-        server_thread = threading.Thread(target=server.serve_forever)
-        # Exit the server thread when the main thread terminates
-        server_thread.daemon = True
-        server_thread.start()
-        print("Server loop running in thread:", server_thread.name)
 
-        # meta = metadata_req(ip, port)
-        # print("metadata: {}".format(meta))
-
-        #push_update(ip, port, "trash.zip")
-        #push_update(ip, port, "trash.zip")
-
-        try:
-            while True:
-                time.sleep(1)
-        except KeyboardInterrupt:
-            print("Shutting down")
-
-        server.shutdown()
 
 if __name__ == "__main__":
     main()
