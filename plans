@@ -9,6 +9,7 @@ bugs / missing features:
     timeout after watchdog fires before it fires again
     there is no atomic functionality to sever connections right now
     server doesn't open port back up when it shuts down
+    python 2.7 for maximum portability
 
 # protocol steps:
 #    client says:                  server says:
