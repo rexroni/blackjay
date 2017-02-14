@@ -8,12 +8,13 @@ class handle_connection(threading.Thread):
 
     def run(self):
         print('connected by',conn)
+        data = bytearray(1024)
         with open('recvd','wb') as f:
-            data = conn.recv(1024)
-            while data:
+            amount = conn.recv_into(data)
+            while amount > 0:
                 print('.',end='',flush=True)
-                f.write(data)
-                data = conn.recv(1024)
+                f.write(data[:amount])
+                amount = conn.recv_into(data)
 
 sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 sock.bind(('',12345))
