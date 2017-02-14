@@ -47,6 +47,11 @@ Blackjay is:
 + Select all the defaults for the client config (localhost, 12345, password)  Password should be atleast 8 bits long but for testing it will just be saved into a config file and you won't have to edit it again.
 + Test that you can place files in the client directory and edit them and the changes sync into the server directory correctly.
 
+## Notes for Testing
+* To close an application that is holding a port use these commands:
+  * Mac OS X: $ sudo lsof -t -i tcp:12345 | xargs kill -9
+  * Linux: sudo fuser -k 8000/tcp
+
 ##\* Future Plans:
 * Currently, only the file data is encrypted.  "Envelope" information, such as the filename, modification time, or file size, are readily visible on the server, but in future versions blackjay hopes to offer even more privacy.  Even now, full privacy can be secured by running the server on a local machine, even a Raspberry PI
 * Many non-security design decisions were made in order to have a functional application, instead of a perfect application.  Future versions of blackjay will be more resource efficient.

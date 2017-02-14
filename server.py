@@ -105,7 +105,7 @@ def main():
     except KeyboardInterrupt:
         print("Shutting down")
 
-
+    socket.shutdown()
 
 
 if __name__ == "__main__":
