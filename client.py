@@ -90,7 +90,7 @@ def make_client_updates_live(push,pull,conflicts,password):
     write_metadata(local_meta,'.blackjay/metadata')
 
 def cleanup_client_temp_files():
-    os.remove('.blackjay/c2s.zip')
+    # os.remove('.blackjay/c2s.zip')
     os.remove('.blackjay/s2c.zip')
     shutil.rmtree('.blackjay/s2c')
 
