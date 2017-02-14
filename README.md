@@ -15,8 +15,15 @@ Blackjay is:
 * Multiplatform: runs on Mac, Windows, and Linux.
 * Free: (un)licensed under the Unlicense
 
+## Setting up with virtualenv and installing dependencies
+1. Install virtualenv: `$ pip install virtualenv`
+2. In project root directory run:  `$ virtualenv --no-site-packages venv`  - This will create your virtual enviroment with no site packages (ones installed globally on your system.
+3. Activate the virtual enviroment: `$ source venv/bin/activate` - Note: you must do this each time you start a new shell to run the application
+4. Install the dependencies: `$ pip install -r requirements.txt`
+
 ## dependencies
-* python 2.7
+Note: All dependencies besides python 2.7 and pip are installed by pip using the requirements.txt file
+* python 2.7 and pip
 * watchdog - notifies applications when files change in folder
 * pycrypto - for encrypting your files (files are never stored or trasmitted to server in plaintext)
 * sshtunnel - for encrypting your connection with the server and providing authentication to the server through ssh using public/private keypairs
@@ -49,8 +56,9 @@ Blackjay is:
 
 ## Notes for Testing
 * To close an application that is holding a port use these commands:
-  * Mac OS X: $ sudo lsof -t -i tcp:12345 | xargs kill -9
-  * Linux: sudo fuser -k 8000/tcp
+  * Mac OS X: `$ sudo lsof -t -i tcp:12345 | xargs kill -9`
+  * Linux: `$ sudo fuser -k 8000/tcp`
+* To deactivate the virtual enviroment run: `$ deactivate`
 
 ##\* Future Plans:
 * Currently, only the file data is encrypted.  "Envelope" information, such as the filename, modification time, or file size, are readily visible on the server, but in future versions blackjay hopes to offer even more privacy.  Even now, full privacy can be secured by running the server on a local machine, even a Raspberry PI
