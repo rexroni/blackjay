@@ -28,10 +28,7 @@ def enter_hostname():
 def enter_port():
     port = 0
     while not port:
-        try:
-            portstr = input('Enter the port number for communication with server (12345): ') or '12345'
-        except:
-            pass
+        portstr = raw_input('Enter the port number for communication with server (12345): ') or '12345'
 
         try:
             port = int(portstr)

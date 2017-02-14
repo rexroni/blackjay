@@ -26,9 +26,9 @@ def prep_server_to_client_archive(push, pull, conflicts, UID):
     zipname = '.blackjay/s2c'+UID+'.zip'
     # now prep the zip archive
     with ZipFile(zipname,'w') as z:
-        z.writestr('.blackjay/push',json.dumps(push,indent='    '))
-        z.writestr('.blackjay/pull',json.dumps(pull,indent='    '))
-        z.writestr('.blackjay/conflicts',json.dumps(conflicts,indent='    '))
+        z.writestr('.blackjay/push',json.dumps(push,indent=3))
+        z.writestr('.blackjay/pull',json.dumps(pull,indent=3))
+        z.writestr('.blackjay/conflicts',json.dumps(conflicts,indent=3))
         for name,meta in pull.items():
             if meta['del_flag'] is False:
                 z.write(name)
@@ -88,11 +88,10 @@ def main():
         serverport = int(sys.argv[2])
 
     if os.path.isdir('.blackjay') is not True:
-        if len(os.listdir()) == 0:
-            print('looks like a new installation.  Initializing...')
-            os.mkdir('.blackjay')
-            os.mkdir('.blackjay/tmp')
-            open('.blackjay/metadata','a').close()
+        os.mkdir('.blackjay')
+        os.mkdir('.blackjay/tmp')
+        open('.blackjay/metadata','a').close()
+        
 
     # Port 0 means to select an arbitrary unused port
     HOST, PORT = '', serverport

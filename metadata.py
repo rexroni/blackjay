@@ -21,7 +21,7 @@ def conflict_name(name):
 
 def write_metadata(meta,filename):
     f = open(filename,'w')
-    json.dump(meta,f,indent='    ')
+    json.dump(meta,f,indent=3)
     f.close()
 
 def load_metadata(filename):

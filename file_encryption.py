@@ -1,4 +1,4 @@
-import os
+import os, sys
 import binascii
 from Crypto.Cipher import Blowfish
 from Crypto.Hash import HMAC,SHA512
@@ -43,13 +43,13 @@ def encrypt_file(plainf,secretf,iv,password):
     while block < lastblock:
         buf = plain.read(BLOCKSIZE)
         secret.write(cipher.encrypt(buf))
-        print('reading %d bytes, %d%% complete     \r'%(len(buf),
-                                        (block+1)/(lastblock+1)*100),end='')
+        sys.stdout.write('reading %d bytes, %d%% complete     \r'%(len(buf),
+                                        (block+1)/(lastblock+1)*100))
         block += 1
     buf = plain.read()
     secret.write(cipher.encrypt(pad_data(buf,8)))
-    print('reading %d bytes, %d%% complete     \r'%(len(buf),
-                                    (block+1)/(lastblock+1)*100),end='')
+    sys.stdout.write('reading %d bytes, %d%% complete     \r'%(len(buf),
+                                    (block+1)/(lastblock+1)*100))
     print('')
     plain.close()
     secret.close()
@@ -73,14 +73,13 @@ def decrypt_file(secretf,plainf,iv,password):
     while block < lastblock:
         buf = secret.read(BLOCKSIZE)
         plain.write(cipher.decrypt(buf))
-        print('writing %d bytes, %d%% complete     \r'%(len(buf),
-                                        (block+1)/(lastblock+1)*100),end='')
+        sys.stdout.write('writing %d bytes, %d%% complete     \r'%(len(buf),
+                                        (block+1)/(lastblock+1)*100))
         block += 1
     buf = secret.read()
     plain.write(unpad_data(cipher.decrypt(buf)))
     print('writing %d bytes, %d%% complete     \r'%(len(buf),
-                                    (block+1)/(lastblock+1)*100),end='')
-    print('')
+                                    (block+1)/(lastblock+1)*100))
     plain.close()
     secret.close()
     # preserve access times
@@ -90,9 +89,9 @@ def decrypt_file(secretf,plainf,iv,password):
 def pad_data(data, bs):
     pad_len = bs - (len(data) % bs)
     #print('pad_len %d'%pad_len)
-    return data + (bytes([pad_len])*pad_len)
+    return data + chr(pad_len)*pad_len
 
 def unpad_data(data):
-    pad_len = data[-1]
+    pad_len = ord(data[-1])
     #print('un pad_len %d'%pad_len)
     return data[:-pad_len]
