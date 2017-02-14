@@ -21,6 +21,12 @@ Blackjay is:
 3. Activate the virtual enviroment: `$ source venv/bin/activate` - Note: you must do this each time you start a new shell to run the application
 4. Install the dependencies: `$ pip install -r requirements.txt`
 
+## Arch linux instructions
+If you are the poor soul on Arch python 2.7 is not the default python like everywhere else so you must install these two packages: python2 python2-pip.  Also, when you run virtualenv to setup your enviroment use these instructions instead of the instructions above:
+1. `$ virtualenv --no-site-packages -p /usr/bin/python2 venv`
+2. `$ source venv/bin/activate`
+3. `$ pip2 install -r requirements.txt`
+
 ## dependencies
 Note: All dependencies besides python 2.7 and pip are installed by pip using the requirements.txt file
 * python 2.7 and pip
