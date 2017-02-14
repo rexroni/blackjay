@@ -16,7 +16,7 @@ Blackjay is:
 * Free: (un)licensed under the Unlicense
 
 ## dependencies
-* python 3.6
+* python 2.7
 * watchdog - notifies applications when files change in folder
 * pycrypto - for encrypting your files (files are never stored or trasmitted to server in plaintext)
 * sshtunnel - for encrypting your connection with the server and providing authentication to the server through ssh using public/private keypairs
