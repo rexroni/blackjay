@@ -27,9 +27,9 @@ tunnel = None
 def prep_client_to_server_archive(push, pull, conflicts, password):
     # now prep the zip archive
     with ZipFile('.blackjay/c2s.zip','w') as z:
-        z.writestr('.blackjay/push',json.dumps(push,indent='    '))
-        z.writestr('.blackjay/pull',json.dumps(pull,indent='    '))
-        z.writestr('.blackjay/conflicts',json.dumps(conflicts,indent='    '))
+        z.writestr('.blackjay/push',json.dumps(push,indent=3))
+        z.writestr('.blackjay/pull',json.dumps(pull,indent=3))
+        z.writestr('.blackjay/conflicts',json.dumps(conflicts,indent=3))
         for name,meta in push.items():
             if meta['del_flag'] is False:
                 iv = gen_iv(name,meta['mtime'])
@@ -90,7 +90,7 @@ def make_client_updates_live(push,pull,conflicts,password):
     write_metadata(local_meta,'.blackjay/metadata')
 
 def cleanup_client_temp_files():
-    os.remove('.blackjay/c2s.zip')
+    # os.remove('.blackjay/c2s.zip')
     os.remove('.blackjay/s2c.zip')
     shutil.rmtree('.blackjay/s2c')
 
@@ -138,7 +138,7 @@ def synchronize(force_pull=False):
 
 class SyncHandler(FileSystemEventHandler):
     def __init__(self):
-        super()
+        super(SyncHandler, self).__init__()
         self.on_modified = self.process
         self.on_deleted = self.process
         self.on_modified = self.process

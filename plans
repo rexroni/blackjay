@@ -8,7 +8,7 @@ bugs / missing features:
     more error checking on socket comms?
     timeout after watchdog fires before it fires again
     there is no atomic functionality to sever connections right now
-    server doesn't open port back up when it shuts down
+    sign server and clients with key that way client executables only work with the server that they are signed with, this allows the clients to verify the server isn't perorming a mitm attack against them
 
 # protocol steps:
 #    client says:                  server says:
