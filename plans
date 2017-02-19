@@ -9,6 +9,8 @@ bugs / missing features:
     timeout after watchdog fires before it fires again
     there is no atomic functionality to sever connections right now
     sign server and clients with key that way client executables only work with the server that they are signed with, this allows the clients to verify the server isn't perorming a mitm attack against them
+    server no longer initializes new folders...
+    client doesn't work in python2
 
 # protocol steps:
 #    client says:                  server says:
@@ -18,3 +20,12 @@ bugs / missing features:
 #3   here are changes/pullreqs
 #4                                 Here are files / I am honoring these changes
 #                     (both write to files)
+
+
+To be even reasonably efficient, our application really needs a mutex on an object that lists files that are being read/written currently.  That way two threads can handle different files simultaneously.
+
+Probably for first release, something simpler is better.
+
+
+packages to install:
+    watchdog sshtunnel flask requests_toolbelt pycrypto configparser

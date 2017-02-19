@@ -89,7 +89,7 @@ def decrypt_file(secretf,plainf,iv,password):
 def pad_data(data, bs):
     pad_len = bs - (len(data) % bs)
     #print('pad_len %d'%pad_len)
-    return data + chr(pad_len)*pad_len
+    return data + bytes(chr(pad_len)*pad_len,'utf8')
 
 def unpad_data(data):
     pad_len = ord(data[-1])

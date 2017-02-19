@@ -4,6 +4,9 @@ import getpass
 
 from ignore import default_ignore_file
 
+if sys.version[0] == '2':
+    input = raw_input
+
 def enter_password():
     print("Enter password for file encryption")
     pprompt = lambda: (getpass.getpass(), getpass.getpass('Retype password: '))
@@ -28,12 +31,11 @@ def enter_hostname():
 def enter_port():
     port = 0
     while not port:
-        portstr = raw_input('Enter the port number for communication with server (12345): ') or '12345'
-
+        portstr = input('Enter the port number for communication with server (12345): ') or '12345'
         try:
             port = int(portstr)
         except:
-            print('Hey you dullard, port NUMBER is a number no whatever {} is'.format(portstr))
+            print('Hey you dullard, port NUMBER is a number not whatever {} is'.format(portstr))
     return str(port)
 
 def get_config(configpath = None):

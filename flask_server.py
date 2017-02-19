@@ -1,4 +1,4 @@
-from flask import Flask, send_file, request
+from flask import Flask, send_file, request, abort
 import os
 import sys
 import json
@@ -54,7 +54,7 @@ def make_server_updates_live(base_dir, push,UID):
 def cleanup_server_temp_files(base_dir, UID):
     os.remove(os.path.join(base_dir, '.blackjay/c2s'+UID+'.zip'))
     os.remove(os.path.join(base_dir, '.blackjay/s2c'+UID+'.zip'))
-    shutil.rmtree(os.path.join(base_dir, '.blackjay/c2s'+UID+''))
+    shutil.rmtree(os.path.join(base_dir, '.blackjay/c2s'+UID))
 
 
 ## Flask server ####################################################
@@ -63,21 +63,39 @@ app = Flask(__name__)
 
 @app.route('/<string:base_dir>/.blackjay/metadata', methods=['GET'])
 def get_metadata(base_dir):
-    if os.path.isdir(os.path.join(base_dir, '.blackjay')):
-        return json.dumps(os.path.join(base_dir, '.blackjay/metadata'))
-    else:
-        abort(404, message="Base Directory {} doesn't exist".format(base_dir))
+    # ignore basedir for now
+    base_dir=''
+    # check the blackjay folder exists
+    blackjay_path = os.path.join(base_dir,'.blackjay')
+    if os.path.isdir(os.path.join(base_dir, '.blackjay')) is False:
+        #abort(404, message="Base Directory {} doesn't exist".format(base_dir))
+        abort(404)
+    # get random uid
+    uid = str(uuid.uuid4())
+    # make the uid folder, for future communications regarding this operation
+    os.mkdir(os.path.join(blackjay_path,uid))
+    # archive the local metadata folder for future comparisons
+    # MUTEX LOCK
+    shutil.copy(os.path.join(blackjay_path,'metadata'),
+                os.path.join(blackjay_path,uid,'metadata'))
+    # MUTEX UNLOCK
+    meta = load_metadata(os.path.join(blackjay_path,uid,'metadata'))
+    # send uid, metadata to client
+    return json.dumps( (uid,meta) )
 
-@app.route('/<string:base_dir>/.blackjay/update', methods=['POST'])
-def post_update(base_dir):
-    if 'c2s.zip' not in request.files:
-        print request.files
-        abort(400, message="No file in post request")
+@app.route('/<string:base_dir>/.blackjay/<string:uid>', methods=['POST'])
+def post_update(base_dir,uid):
+    # ignore basedir for now
+    base_dir=''
+    print('REQUEST FILES:',request.files)
+    if '.blackjay/c2s.zip' not in request.files:
+        #abort(400, message="No file in post request")
+        abort(400)
     if not os.path.isdir(os.path.join(base_dir, '.blackjay')):
-        abort(404, message="Base Directory {} doesn't exist".format(base_dir))
-    uid = str(uuid.uuid4()) # generate random uid
+        #abort(404, message="Base Directory {} doesn't exist".format(base_dir))
+        abort(404)
     req_zipname = os.path.join(base_dir, '.blackjay/c2s{}.zip'.format(uid))
-    request.files['c2s.zip'].save(req_zipname)
+    request.files['.blackjay/c2s.zip'].save(req_zipname)
     push, pull, conflicts = extract_client_to_server_archive(base_dir,req_zipname,uid)
     resp_zipname = prep_server_to_client_archive(base_dir,push,pull,conflicts,uid)
     make_server_updates_live(base_dir,push,uid)
