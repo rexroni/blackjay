@@ -54,30 +54,35 @@ def cleanup_server_temp_files(UID):
     shutil.rmtree('.blackjay/c2s'+UID+'')
 
 class handle_connection(threading.Thread):
-    def __init__ ( self, sock):
+    def __init__ ( self, sock, mutex):
        self.sock = sock
+       self.mutex = mutex
        threading.Thread.__init__ ( self )
 
     def run(self):
-        data = recv_all(self.sock)
-        response = 'you fucked up'
-        if data == metadata_req_message:
-            send_size(json.dumps(load_metadata(".blackjay/metadata")), self.sock)
-        elif data == prepare_message:
-            send_size(prepare_response, self.sock)
-            UID = str(time.time())
-            zipfile = '.blackjay/c2s{}.zip'.format(UID)
-            recv_file(zipfile, self.sock)
-            print("Like a boss")
-            push, pull, conflicts = extract_client_to_server_archive(zipfile,UID)
-            # right now, accept every acorn!
-            resp_zipname = prep_server_to_client_archive(push, pull, conflicts, UID)
-            send_file(resp_zipname, self.sock)
-            make_server_updates_live(push,UID)
-            cleanup_server_temp_files(UID)
-        else:
-            send_size('you fucked up', self.sock)
-        self.sock.close()
+        self.mutex.acquire()
+        try:
+            data = recv_all(self.sock)
+            if data == metadata_req_message:
+                send_size(json.dumps(load_metadata(".blackjay/metadata")), self.sock)
+            elif data == prepare_message:
+                send_size(prepare_response, self.sock)
+                UID = str(time.time())
+                zipfile = '.blackjay/c2s{}.zip'.format(UID)
+                recv_file(zipfile, self.sock)
+                print("Like a boss")
+                push, pull, conflicts = extract_client_to_server_archive(zipfile,UID)
+                # right now, accept every acorn!
+                resp_zipname = prep_server_to_client_archive(push, pull, conflicts, UID)
+                send_file(resp_zipname, self.sock)
+                make_server_updates_live(push,UID)
+                cleanup_server_temp_files(UID)
+            else:
+                send_size('you fucked up', self.sock)
+            self.sock.close()
+        except:
+            pass
+        self.mutex.release()
 
 def main():
     serverport = 12345 # default value
@@ -99,10 +104,11 @@ def main():
     listener = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     listener.bind((HOST,PORT))
     listener.listen(5)
+    mutex = threading.Lock()
     try:
         while True:
             conn,addr = listener.accept()
-            handle_connection(conn).start()
+            handle_connection(conn,mutex).start()
     except KeyboardInterrupt:
         print("Shutting down")
 
