@@ -101,29 +101,40 @@ def get_remote_metadata(ip,port):
 
 def synchronize(force_pull=False):
     global global_ip, global_port, config, global_mutex
+    global metadata_req_message, prepare_message, prepare_response
     # if another event's synchronize is occuring... just exit
     if global_mutex.acquire(blocking=False) == False:
         print('quitting due to locked mutex')
         return
-    try:
-        # debounce timeout
-        sleep(.3)
-        local_meta, immediate_updates, any_updates = get_updated_local_metadata()
-        # if there's immediate updates (like a new latest md5sum or mtime), save to disk
-        if len(immediate_updates) > 0:
-            temp_meta = load_metadata('.blackjay/metadata')
-            for name,meta_entry in immediate_updates.items():
-                temp_meta[name] = meta_entry
-            write_metadata(temp_meta,'.blackjay/metadata')
-        print('any updates?',any_updates)
-        if any_updates is False and force_pull is False:
-            global_mutex.release()
-            return
-        # update the tunnel
-        if tunnel is not None and tunnel.is_alive is False:
-            print('restarting tunnel')
-            tunnel.restart()
-        remote_meta = get_remote_metadata(global_ip,global_port)
+    #try:
+    # debounce timeout
+    sleep(.3)
+    local_meta, immediate_updates, any_updates = get_updated_local_metadata()
+    # if there's immediate updates (like a new latest md5sum or mtime), save to disk
+    if len(immediate_updates) > 0:
+        temp_meta = load_metadata('.blackjay/metadata')
+        for name,meta_entry in immediate_updates.items():
+            temp_meta[name] = meta_entry
+        write_metadata(temp_meta,'.blackjay/metadata')
+    print('any updates?',any_updates)
+    if any_updates is False and force_pull is False:
+        global_mutex.release()
+        return
+    # update the tunnel
+    if tunnel is not None and tunnel.is_alive is False:
+        print('restarting tunnel')
+        tunnel.restart()
+    # open a persistent socket (simpler this way, for now)
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        print(sock)
+        print("Trying to connect on : {}".format((global_ip,global_port)))
+        sock.connect((global_ip,global_port))
+        print(sock)
+        # send metadata request message
+        send_size(metadata_req_message,sock)
+        remote_meta = json.loads(recv_all(sock))
+        #remote_meta = get_remote_metadata(global_ip,global_port)
+        # examine remote metadata
         push, pull, conflicts = compare_metadata(local_meta,remote_meta)
         print('pushing',push)
         print('pulling',pull)
@@ -131,12 +142,12 @@ def synchronize(force_pull=False):
         push = add_hmacs_to_metadata(push, config['password'])
         prep_client_to_server_archive(push, pull, conflicts, config['password'])
         print('pushing update')
-        # update the tunnel
-        if tunnel is not None and tunnel.is_alive is False:
-            print('restarting tunnel')
-            tunnel.restart()
-        push_update(global_ip,global_port,'.blackjay/c2s.zip')
-        # push_update will also recieve the response!
+        #push_update(global_ip,global_port,'.blackjay/c2s.zip')
+        send_file('.blackjay/c2s.zip', sock)
+        recv_file('.blackjay/s2c.zip', sock)
+        sock.shutdown(socket.SHUT_RDWR)
+        sock.close()
+        # now examine response
         print('extracting s2c')
         npush, npull, nconfl = extract_server_to_client_archive()
         print('pushing',npush)
@@ -144,8 +155,8 @@ def synchronize(force_pull=False):
         print('conflicts',nconfl)
         make_client_updates_live(npush,npull,nconfl,config['password'])
         cleanup_client_temp_files()
-    except:
-        pass
+    #except:
+    #    pass
     global_mutex.release()
 
 

@@ -65,8 +65,6 @@ class handle_connection(threading.Thread):
             data = recv_all(self.sock)
             if data == metadata_req_message:
                 send_size(json.dumps(load_metadata(".blackjay/metadata")), self.sock)
-            elif data == prepare_message:
-                send_size(prepare_response, self.sock)
                 UID = str(time.time())
                 zipfile = '.blackjay/c2s{}.zip'.format(UID)
                 recv_file(zipfile, self.sock)
