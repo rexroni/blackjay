@@ -15,29 +15,30 @@ Blackjay is:
 * Multiplatform: runs on Mac, Windows, and Linux.
 * Free: (un)licensed under the Unlicense
 
-## Setting up with virtualenv and installing dependencies
-1. Install virtualenv: `$ pip install virtualenv`
-2. In project root directory run:  `$ virtualenv --no-site-packages venv`  - This will create your virtual enviroment with no site packages (ones installed globally on your system.
-3. Activate the virtual enviroment: `$ source venv/bin/activate` - Note: you must do this each time you start a new shell to run the application
-4. Install the dependencies: `$ pip install -r requirements.txt`
+## Installing pyenv to manage python versions for development
+1. `$ brew install pyenv`  - Mac OSX specific, for your flavor of linux you can install with the instructions [here](https://github.com/yyuu/pyenv) or use your package manager
+2. `$ echo 'eval "$(pyenv init -)"' >> ~/.bash_profile`
+3. `$ source ~/.bashrc`
+4. `$ pyenv install 3.4.6`
+5. `$ pyenv local 3.4.6` - this will set the python version for the folder you are in and any call to python will result in this version
 
-## Arch linux instructions
-If you are the poor soul on Arch python 2.7 is not the default python like everywhere else so you must install these two packages: python2 python2-pip.  Also, when you run virtualenv to setup your enviroment use these instructions instead of the instructions above:
-1. `$ virtualenv --no-site-packages -p /usr/bin/python2 venv`
-2. `$ source venv/bin/activate`
-3. `$ pip2 install -r requirements.txt`
+## Use pyenv-virtualevn to manage dependencies
+1. `$ brew install pyenv-virtualenv`  - Mac OSX specific, for your flavor of linux you can install with the instructions [here](https://github.com/yyuu/pyenv-virtualenv) or use your package manager
+2. `$ echo 'eval "$(pyenv virtualenv-init -)"' >> ~/.bash_profile`
+3. `$ source ~/.bashrc`
+4. `$ pyenv virtualenv 3.4.6 venv`
 
-## dependencies
-Note: All dependencies besides python 2.7 and pip are installed by pip using the requirements.txt file
-* python 2.7 and pip
-* watchdog - notifies applications when files change in folder
-* pycrypto - for encrypting your files (files are never stored or trasmitted to server in plaintext)
-* sshtunnel - for encrypting your connection with the server and providing authentication to the server through ssh using public/private keypairs
+## managing dependiencies with pip
+All dependencies are listed with their versions in the requirements.txt file.  To update it to what is installed in the current enviroment use this command:
+> `$ pip freeze > requirements.txt`
+
+To install all the dpeendiencies to your enviroment in the requirements.txt file use this command:
+> `$ pip install -r requirements.txt`
 
 ## windows client install step by step (tested on windows 7)
-1. Download Python 3.6 ( https://www.python.org/ftp/python/3.6.0/python-3.6.0.exe )
-+ Install Python 3.6 ( defaults to C:\Users\{USERNAME}\AppData\Local\Programs\Python\Python36-32 )
-  + Check box for Add Python 3.6 to PATH
+1. Download Python 3.4 ( https://www.python.org/ftp/python/3.4.0/python-3.4.0.exe )
++ Install Python 3.4 ( defaults to C:\Users\{USERNAME}\AppData\Local\Programs\Python\Python34-32 )
+  + Check box for Add Python 3.4 to PATH
 + Install Visual C++ 2015 Build Tools ( http://landinghub.visualstudio.com/visual-cpp-build-tools )
 + Open cmd.exe ( Press Windows key and type cmd.exe )
 + Force stdint.h in Enviroment Variables ( http://stackoverflow.com/questions/41843266/microsoft-windows-python-3-6-pycrypto-installation-error )

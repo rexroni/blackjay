@@ -65,7 +65,7 @@ def recv_file(filename, sock):
 def send_size(data, sock):
     len_str = "{}".format(len(data))
     len_str_size = chr(len(len_str))
-    send_data = bytes(len_str_size+len_str)+data
+    send_data = bytes(len_str_size+len_str,'ascii')+data
     total_sent = 0
     total_len = len(send_data)
     while total_sent < total_len:
