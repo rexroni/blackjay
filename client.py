@@ -44,11 +44,11 @@ def extract_server_to_client_archive():
     if os.path.exists(tempdir): shutil.rmtree(tempdir)
     os.mkdir(tempdir)
     # extract the zip file
-    with ZipFile(os.path.join('.blackjay/s2c.zip'),'r') as z:
+    with ZipFile('.blackjay/s2c.zip','r') as z:
         z.extractall(tempdir)
-    push = load_metadata(os.path.join(tempdir,'.blackjay/push'))
-    pull = load_metadata(os.path.join(tempdir,'.blackjay/pull'))
-    conflicts = load_metadata(os.path.join(tempdir,'.blackjay/conflicts'))
+    push = load_metadata(tempdir+'/.blackjay/push')
+    pull = load_metadata(tempdir+'/.blackjay/pull')
+    conflicts = load_metadata(tempdir+'/.blackjay/conflicts')
     return push, pull, conflicts
 
 def make_client_updates_live(push,pull,conflicts,password):
@@ -62,7 +62,7 @@ def make_client_updates_live(push,pull,conflicts,password):
         if meta['del_flag'] is False:
             tempname = '.blackjay/decrypt.temp'
             iv = gen_iv(name,meta['mtime'])
-            decrypt_file(os.path.join('.blackjay/s2c',name),tempname,iv,password)
+            decrypt_file('.blackjay/s2c/'+name,tempname,iv,password)
             # verify hmac before overwriting local file
             if(meta['hmac'] == get_hmac(tempname,password)):
                 os.rename(tempname,name)
@@ -76,7 +76,7 @@ def make_client_updates_live(push,pull,conflicts,password):
         cname = conflict_name(name)
         tempname = '.blackjay/decrypt.temp'
         iv = gen_iv(name,meta['mtime'])
-        decrypt_file(os.path.join('.blackjay/s2c',name),tempname,iv,password)
+        decrypt_file('.blackjay/s2c/'+name,tempname,iv,password)
         # verify hmac before copying to local file
         if(meta['hmac'] == get_hmac(tempname,password)):
             os.rename(tempname,cname)
@@ -160,13 +160,14 @@ class SyncHandler(FileSystemEventHandler):
             #print('ignoring dir modified event')
             return
         # now skip anything that matches ignore patterns, except deleting a server_version file
-        if should_ignore(event.src_path, ['/.*\.server_copy[^/]*']) \
+        event_filename = event.src_path.replace(os.path.sep,'/')
+        if should_ignore(event_filename, ['/.*\.server_copy[^/]*']) \
           and event.event_type == 'deleted':
             pass
-        elif should_ignore(event.src_path,load_ignore_patterns()):
+        elif should_ignore(event_filename,load_ignore_patterns()):
             #print('ignoring file: ',event.src_path)
             return
-        print('syncing due to',event.src_path)
+        print('syncing due to',event_filename)
         synchronize()
         print('')
 

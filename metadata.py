@@ -40,7 +40,7 @@ def get_updated_local_metadata():
     immediate_updates = {}
     for root, dirs, files in os.walk('.'):
         for f in files:
-            name = os.path.join(root,f)
+            name = os.path.join(root,f).replace(os.path.sep,'/')
             # ignore files that are already in our database
             meta_entry = meta.get(name,None)
             if meta_entry is not None and meta_entry['del_flag'] is False:

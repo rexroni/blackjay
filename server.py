@@ -15,9 +15,9 @@ def extract_client_to_server_archive(zipfile,UID):
     # extract the zip file
     with ZipFile(zipfile,'r') as z:
         z.extractall(tempdir)
-    push = load_metadata(os.path.join(tempdir,'.blackjay/push'))
-    pull = load_metadata(os.path.join(tempdir,'.blackjay/pull'))
-    conflicts = load_metadata(os.path.join(tempdir,'.blackjay/conflicts'))
+    push = load_metadata(tempdir+'/.blackjay/push')
+    pull = load_metadata(tempdir+'/.blackjay/pull')
+    conflicts = load_metadata(tempdir+'/.blackjay/conflicts')
     return push, pull, conflicts
 
 # now (push, pull, conflicts) are just those changes accepted by the server
@@ -43,7 +43,7 @@ def make_server_updates_live(push,UID):
     for name,meta in push.items():
         local_meta[name] = meta
         if meta['del_flag'] is False:
-            os.rename(os.path.join('.blackjay/c2s'+UID,name),name)
+            os.rename('.blackjay/c2s'+UID+'/'+name,name)
     # for pulling from the server, no metadata changes
     # the server doesn't handle conflicts
     write_metadata(local_meta,'.blackjay/metadata')
