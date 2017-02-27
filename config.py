@@ -39,6 +39,17 @@ def enter_port():
             print('Hey you dullard, port NUMBER is a number no whatever {} is'.format(portstr))
     return str(port)
 
+def enter_transport_security():
+    security = 'ssh'
+    try:
+        security = input('Enter the transport security ( [ssh]/None_PleaseAttackMeManInTheMiddle ): ') or 'ssh'
+    except:
+        pass
+    if security != 'ssh' and security != 'None_PleaseAttackMeManInTheMiddle':
+        security = 'ssh'
+        print('transport security set to "ssh"')
+    return security
+
 def get_config(configpath = None):
     if not configpath:
         configpath = os.path.abspath('.blackjay/config')
@@ -62,6 +73,7 @@ def get_config(configpath = None):
         config.add_section('blackjay')
         config['blackjay']['host'] = enter_hostname()
         config['blackjay']['port'] = enter_port()
+        config['blackjay']['transport_security'] = enter_transport_security()
         config['blackjay']['password'] = enter_password()
 
         with open(configpath, 'w') as configfile:
@@ -106,6 +118,7 @@ def main():
     config = get_config()
     print('Host: ', config['host'])
     print('Port: ', config['port'])
+    print('Transport Security: ', config['transport_security'])
     print('Password: ', config['password'])
 
     print(config)

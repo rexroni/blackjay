@@ -182,6 +182,7 @@ def main():
     # load config file
     config = get_config()
     tunnel = None if config['host'] == 'localhost' \
+                     or config['transport_security'] == 'None_PlaseAttackMeManInTheMiddle' \
                   else sshtunnel.SSHTunnelForwarder(config['host'],
                        remote_bind_address=('localhost',int(config['port'])))
 
