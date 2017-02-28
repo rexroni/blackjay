@@ -62,9 +62,9 @@ def get_config(configpath = None):
     if os.path.isdir('.blackjay') is not True:
         print('Looks like a new install... creating a .blackjay folder')
         os.mkdir('.blackjay')
-        open('.blackjay/metadata','a').close()
+        open(os.path.join('.blackjay','metadata'),'a').close()
         # start with sane defaults in ignore file
-        ignf = open('.blackjay/ignore','w')
+        ignf = open(os.path.join('.blackjay','ignore'),'w')
         ignf.write(default_ignore_file)
         ignf.close()
 
