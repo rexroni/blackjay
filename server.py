@@ -98,15 +98,7 @@ def main():
             print('looks like a new installation.  Initializing...')
             os.mkdir('.blackjay')
             os.mkdir(os.path.join('.blackjay','tmp'))
-            ignf = open(os.path.join('.blackjay','ignore'),'w')
-            ignf.write(default_ignore_file)
-            ignf.close()
             open(os.path.join('.blackjay','metadata'),'a').close()
-            #initalize local metadata
-            meta, immediate_updates, found_an_update = get_updated_local_metadata()
-            write_metadata(meta, os.path.join('.blackjay','metadata'))
-
-
 
     # Port 0 means to select an arbitrary unused port
     HOST, PORT = '', serverport

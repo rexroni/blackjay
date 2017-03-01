@@ -132,15 +132,7 @@ def synchronize(force_pull=False):
         print(sock)
         # send metadata request message
         send_size(metadata_req_message,sock)
-        json_data = recv_all(sock)
-        print("json_data = {}".format(json_data))
-        if json_data == b'{}':
-            print("exiting due to an empty json object returned, check server config")
-            global_mutex.release()
-            return
-        else:
-            get_remote_metadata = json.loads(json_data)
-
+        remote_meta = json.loads(recv_all(sock).decode('utf8'))
         #remote_meta = get_remote_metadata(global_ip,global_port)
         # examine remote metadata
         push, pull, conflicts = compare_metadata(local_meta,remote_meta)
