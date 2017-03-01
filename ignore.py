@@ -1,4 +1,4 @@
-import re, os
+import re
 
 default_ignore_file = '''# the blackjay directory
 .blackjay/
@@ -22,7 +22,7 @@ default_ignore_file = '''# the blackjay directory
 '''
 
 def load_ignore_patterns():
-    ignf = open(os.path.join('.blackjay','ignore'),'r')
+    ignf = open('.blackjay/ignore','r')
     igntext = ignf.read()
     ignf.close()
 

@@ -10,25 +10,25 @@ from networking import *
 
 def extract_client_to_server_archive(zipfile,UID):
     # make the temp directory
-    tempdir = os.path.join('.blackjay','c2s{}'.format(UID))
+    tempdir = '.blackjay/c2s'+UID
     os.mkdir(tempdir)
     # extract the zip file
     with ZipFile(zipfile,'r') as z:
         z.extractall(tempdir)
-    push = load_metadata(os.path.join(tempdir,'.blackjay','push'))
-    pull = load_metadata(os.path.join(tempdir,'.blackjay','pull'))
-    conflicts = load_metadata(os.path.join(tempdir,'.blackjay','conflicts'))
+    push = load_metadata(tempdir+'/.blackjay/push')
+    pull = load_metadata(tempdir+'/.blackjay/pull')
+    conflicts = load_metadata(tempdir+'/.blackjay/conflicts')
     return push, pull, conflicts
 
 # now (push, pull, conflicts) are just those changes accepted by the server
 def prep_server_to_client_archive(push, pull, conflicts, UID):
     # make a response directory
-    zipname = os.path.join('.blackjay','s2c{}.zip'.format(UID))
+    zipname = '.blackjay/s2c'+UID+'.zip'
     # now prep the zip archive
     with ZipFile(zipname,'w') as z:
-        z.writestr(os.path.join('.blackjay','push'),json.dumps(push,indent='    '))
-        z.writestr(os.path.join('.blackjay','pull'),json.dumps(pull,indent='    '))
-        z.writestr(os.path.join('.blackjay','conflicts'),json.dumps(conflicts,indent='    '))
+        z.writestr('.blackjay/push',json.dumps(push,indent='    '))
+        z.writestr('.blackjay/pull',json.dumps(pull,indent='    '))
+        z.writestr('.blackjay/conflicts',json.dumps(conflicts,indent='    '))
         for name,meta in pull.items():
             if meta['del_flag'] is False:
                 z.write(name)
@@ -38,20 +38,20 @@ def prep_server_to_client_archive(push, pull, conflicts, UID):
     return zipname
 
 def make_server_updates_live(push,UID):
-    local_meta = load_metadata(os.path.join('.blackjay','metadata'))
+    local_meta = load_metadata('.blackjay/metadata')
     # for pushes which were accepted, update local metadata
     for name,meta in push.items():
         local_meta[name] = meta
         if meta['del_flag'] is False:
-            os.rename(os.path.join('.blackjay','c2s{}'.format(UID),name),name)
+            os.rename('.blackjay/c2s'+UID+'/'+name,name)
     # for pulling from the server, no metadata changes
     # the server doesn't handle conflicts
-    write_metadata(local_meta, os.path.join('.blackjay','metadata'))
+    write_metadata(local_meta,'.blackjay/metadata')
 
 def cleanup_server_temp_files(UID):
-    os.remove(os.path.join('.blackjay','c2s{}.zip'.format(UID)))
-    os.remove(os.path.join('.blackjay','s2c{}.zip'.format(UID)))
-    shutil.rmtree(os.path.join('.blackjay','c2s{}'.format(UID)))
+    os.remove('.blackjay/c2s'+UID+'.zip')
+    os.remove('.blackjay/s2c'+UID+'.zip')
+    shutil.rmtree('.blackjay/c2s'+UID+'')
 
 class handle_connection(threading.Thread):
     def __init__ ( self, sock, mutex):
@@ -69,7 +69,7 @@ class handle_connection(threading.Thread):
                 print("sending: {}".format(json_metadata))
                 send_size(json_metadata, self.sock)
                 UID = str(time.time())
-                zipfile = os.path.join('.blackjay','c2s{}.zip'.format(UID))
+                zipfile = '.blackjay/c2s{}.zip'.format(UID)
                 recv_file(zipfile, self.sock)
                 print("Like a boss")
                 push, pull, conflicts = extract_client_to_server_archive(zipfile,UID)
@@ -97,8 +97,8 @@ def main():
         if len(os.listdir()) == 0:
             print('looks like a new installation.  Initializing...')
             os.mkdir('.blackjay')
-            os.mkdir(os.path.join('.blackjay','tmp'))
-            open(os.path.join('.blackjay','metadata'),'a').close()
+            os.mkdir('.blackjay/tmp')
+            open('.blackjay/metadata','a').close()
 
     # Port 0 means to select an arbitrary unused port
     HOST, PORT = '', serverport
