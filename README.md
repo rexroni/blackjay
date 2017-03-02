@@ -20,6 +20,7 @@ Blackjay is:
 * watchdog - notifies applications when files change in folder
 * pycrypto - for encrypting your files (files are never stored or trasmitted to server in plaintext)
 * sshtunnel - for encrypting your connection with the server and providing authentication to the server through ssh using public/private keypairs
+* bcrypt - for secure password hashing
 
 ## windows client install step by step (tested on windows 7)
 1. Download Python 3.6 ( https://www.python.org/ftp/python/3.6.0/python-3.6.0.exe )
