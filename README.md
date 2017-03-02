@@ -22,6 +22,14 @@ Blackjay is:
 * sshtunnel - for encrypting your connection with the server and providing authentication to the server through ssh using public/private keypairs
 * bcrypt - for secure password hashing
 
+## Installing pyenv on Arch Linux
+Instructions from [pyenv-installer](https://github.com/yyuu/pyenv-installer):
+1. `$ curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash`
+2. Do what it says to do about placing lines in your .bash_profile
+3. `$ pyenv update`
+4. `$ pyenv install 3.4.6`
+5. Wait...
+
 ## windows client install step by step (tested on windows 7)
 1. Download Python 3.6 ( https://www.python.org/ftp/python/3.6.0/python-3.6.0.exe )
 + Install Python 3.6 ( defaults to C:\Users\{USERNAME}\AppData\Local\Programs\Python\Python36-32 )
