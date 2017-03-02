@@ -6,6 +6,8 @@ import stat
 import shutil
 import sshtunnel
 import threading
+import bcrypt
+import traceback
 from time import sleep
 from watchdog.observers import Observer
 import watchdog.events
@@ -126,13 +128,20 @@ def synchronize(force_pull=False):
             tunnel.restart()
         # open a persistent socket (simpler this way, for now)
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            print(sock)
             print("Trying to connect on : {}".format((global_ip,global_port)))
             sock.connect((global_ip,global_port))
-            print(sock)
-            # send metadata request message
-            send_size(metadata_req_message,sock)
-            remote_meta = json.loads(recv_all(sock).decode('utf8'))
+            # send salt request message
+            send_size(salt_req_message,sock)
+            # recieve salt
+            salt = recv_all(sock)
+            # send hashed password with salt
+            hashed_password = bcrypt.hashpw(config['password'],salt)
+            send_size(hashed_password, sock)
+            # now receive metadata
+            meta_or_wrong_password = recv_all(sock)
+            if meta_or_wrong_password == wrong_password_message:
+                raise ValueError('Password does not match remote store')
+            remote_meta = json.loads(meta_or_wrong_password.decode('utf8'))
             #remote_meta = get_remote_metadata(global_ip,global_port)
             # examine remote metadata
             push, pull, conflicts = compare_metadata(local_meta,remote_meta)
@@ -156,6 +165,7 @@ def synchronize(force_pull=False):
             make_client_updates_live(npush,npull,nconfl,config['password'])
             cleanup_client_temp_files()
     except:
+        traceback.print_exc()
         pass
     global_mutex.release()
 

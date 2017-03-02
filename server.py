@@ -3,6 +3,9 @@ import time
 import sys
 import json
 import shutil
+import bcrypt
+import uuid
+import traceback
 from zipfile import ZipFile
 
 from metadata import *
@@ -53,6 +56,29 @@ def cleanup_server_temp_files(UID):
     os.remove('.blackjay/s2c'+UID+'.zip')
     shutil.rmtree('.blackjay/c2s'+UID+'')
 
+def get_salt():
+    # use existing salt if there is one
+    if os.path.exists('.blackjay/salt'):
+        with open('.blackjay/salt','rb') as f:
+            salt = f.read()
+        print ('old salt',salt)
+        return salt
+    else:
+        salt = bcrypt.gensalt()
+        with open('.blackjay/salt','wb') as f:
+            f.write(salt)
+        return salt
+
+def compare_password_hash(client_pass):
+    if os.path.exists('.blackjay/password_hash'):
+        with open('.blackjay/password_hash','rb') as f:
+            return client_pass == f.read()
+    else:
+        with open('.blackjay/password_hash','wb') as f:
+            f.write(client_pass)
+        return True
+
+
 class handle_connection(threading.Thread):
     def __init__ ( self, sock, mutex):
        self.sock = sock
@@ -63,25 +89,32 @@ class handle_connection(threading.Thread):
         self.mutex.acquire()
         try:
             data = recv_all(self.sock)
-            if data == metadata_req_message:
-                print("received: {}".format(metadata_req_message))
-                json_metadata = json.dumps(load_metadata(os.path.join('.blackjay','metadata')))
-                print("sending: {}".format(json_metadata))
-                send_size(json_metadata, self.sock)
-                UID = str(time.time())
-                zipfile = '.blackjay/c2s{}.zip'.format(UID)
-                recv_file(zipfile, self.sock)
-                print("Like a boss")
-                push, pull, conflicts = extract_client_to_server_archive(zipfile,UID)
-                # right now, accept every acorn!
-                resp_zipname = prep_server_to_client_archive(push, pull, conflicts, UID)
-                send_file(resp_zipname, self.sock)
-                make_server_updates_live(push,UID)
-                cleanup_server_temp_files(UID)
+            if data == salt_req_message:
+                # send the salt
+                send_size(get_salt(), self.sock)
+                # recieve password hashed with salt
+                password = recv_all(self.sock)
+                if compare_password_hash(password):
+                    json_metadata = json.dumps(load_metadata(os.path.join('.blackjay','metadata')))
+                    send_size(json_metadata, self.sock)
+                    UID = str(uuid.uuid4())
+                    zipfile = '.blackjay/c2s{}.zip'.format(UID)
+                    recv_file(zipfile, self.sock)
+                    print("Like a boss")
+                    push, pull, conflicts = extract_client_to_server_archive(zipfile,UID)
+                    # right now, accept every acorn!
+                    resp_zipname = prep_server_to_client_archive(push, pull, conflicts, UID)
+                    send_file(resp_zipname, self.sock)
+                    make_server_updates_live(push,UID)
+                    cleanup_server_temp_files(UID)
+                else:
+                    # wrong password
+                    send_size(wrong_password_message,self.sock)
             else:
                 send_size('you fucked up', self.sock)
             self.sock.close()
         except:
+            traceback.print_exc()
             pass
         self.mutex.release()
 

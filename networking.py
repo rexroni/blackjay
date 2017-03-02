@@ -1,6 +1,8 @@
 import socket
 import os
 
+salt_req_message = b"stop being so salty"
+wrong_password_message = b"doh!"
 metadata_req_message = b"gimme the metadata"
 prepare_message = b"prepare to receive all my acorns"
 prepare_response = b"send your worst"
