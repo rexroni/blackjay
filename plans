@@ -6,9 +6,7 @@ bugs / missing features:
     encrypted filenames
     need password checks
     more error checking on socket comms?
-    timeout after watchdog fires before it fires again
-    there is no atomic functionality to sever connections right now
-    server doesn't open port back up when it shuts down
+    need network robustness testing
 
 # protocol steps:
 #    client says:                  server says:

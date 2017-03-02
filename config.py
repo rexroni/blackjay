@@ -11,8 +11,8 @@ def enter_password():
         p1, p2 = pprompt()
         if p1 != p2:
             print('Passwords do not match. Try again')
-        elif p1 == '':
-            print('Enter a password, cannot be blank. Try again')
+        elif len(p1) < 8:
+            print('Password must be at least 8 characters for blowfish encryption.')
         else:
             break
     return p1
