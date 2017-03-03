@@ -232,8 +232,7 @@ def main():
     tunnel = None if config['host'] == 'localhost' \
                      or config['transport_security'] == 'None_PlaseAttackMeManInTheMiddle' \
                   else sshtunnel.SSHTunnelForwarder(config['host'],
-                       remote_bind_address=('localhost',int(config['port'])),
-                               ssh_pkey=os.path.expanduser('~/.ssh/id_rsa'))
+                       remote_bind_address=('localhost',int(config['port'])))
 
     if config['host'] != 'localhost':
         print("starting ssh tunnel")
