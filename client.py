@@ -69,17 +69,25 @@ def make_client_updates_live(push,pull,conflicts,password):
             decrypt_file('.blackjay/s2c/'+name,tempname,iv,password)
             # verify hmac before overwriting local file
             if(meta['hmac'] == get_hmac(tempname,password)):
-                # check that all the folders in the path exist
-                folders = name.split('/')[1:-1]
-                for i in range(len(folders)):
-                    f = '/'.join(folders[:i+1])
-                    if os.path.exists(f) is False:
-                        os.mkdir(f)
+                # make folders if necessary
+                p,f = os.path.split(name)
+                os.makedirs(p, exist_ok=True)
+                # move the temporary file
                 os.rename(tempname,name)
             else:
                 print('----------------------------------------------')
                 print('!!!!!!!!!!!!!HMAC DID NOT MATCH!!!!!!!!!!!!!!!')
                 print('----------------------------------------------')
+        else:
+            # delete files marked for deletions
+            p,f = os.path.split(name)
+            # delete the files
+            os.remove(name)
+            # prune empty folders if necessary
+            try:
+                os.removedirs(p)
+            except OSError:
+                pass
     # for conflicts, move file to conflict-styled name
     for name,meta in conflicts.items():
         local_meta[name] = meta

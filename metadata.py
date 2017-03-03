@@ -93,6 +93,12 @@ def get_updated_local_metadata():
         if os.path.exists(name) is False:
             meta[name]['del_flag'] = True
             found_an_update = True
+            # prune empty folders if necessary
+            p,f = os.path.split(name)
+            try:
+                os.removedirs(p)
+            except OSError:
+                pass
     return meta, immediate_updates, found_an_update
 
 # all possible combinations of updates/deletions

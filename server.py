@@ -46,13 +46,21 @@ def make_server_updates_live(push,UID):
     for name,meta in push.items():
         local_meta[name] = meta
         if meta['del_flag'] is False:
-            # check that all the folders in the path exist
-            folders = name.split('/')[1:-1]
-            for i in range(len(folders)):
-                f = '/'.join(folders[:i+1])
-                if os.path.exists(f) is False:
-                    os.mkdir(f)
+            # make folders if necessary
+            p,f = os.path.split(name)
+            os.makedirs(p, exist_ok=True)
+            # move the temporary file
             os.rename('.blackjay/c2s'+UID+'/'+name,name)
+        else:
+            # delete files marked for deletions
+            p,f = os.path.split(name)
+            # delete the files
+            os.remove(name)
+            # prune empty folders if necessary
+            try:
+                os.removedirs(p)
+            except OSError:
+                pass
     # for pulling from the server, no metadata changes
     # the server doesn't handle conflicts
     write_metadata(local_meta,'.blackjay/metadata')
