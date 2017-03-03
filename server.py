@@ -46,6 +46,12 @@ def make_server_updates_live(push,UID):
     for name,meta in push.items():
         local_meta[name] = meta
         if meta['del_flag'] is False:
+            # check that all the folders in the path exist
+            folders = name.split('/')[1:-1]
+            for i in range(len(folders)):
+                f = '/'.join(folders[:i+1])
+                if os.path.exists(f) is False:
+                    os.mkdir(f)
             os.rename('.blackjay/c2s'+UID+'/'+name,name)
     # for pulling from the server, no metadata changes
     # the server doesn't handle conflicts
@@ -61,7 +67,6 @@ def get_salt():
     if os.path.exists('.blackjay/salt'):
         with open('.blackjay/salt','rb') as f:
             salt = f.read()
-        print ('old salt',salt)
         return salt
     else:
         salt = bcrypt.gensalt()

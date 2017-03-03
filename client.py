@@ -69,6 +69,12 @@ def make_client_updates_live(push,pull,conflicts,password):
             decrypt_file('.blackjay/s2c/'+name,tempname,iv,password)
             # verify hmac before overwriting local file
             if(meta['hmac'] == get_hmac(tempname,password)):
+                # check that all the folders in the path exist
+                folders = name.split('/')[1:-1]
+                for i in range(len(folders)):
+                    f = '/'.join(folders[:i+1])
+                    if os.path.exists(f) is False:
+                        os.mkdir(f)
                 os.rename(tempname,name)
             else:
                 print('----------------------------------------------')
@@ -218,7 +224,8 @@ def main():
     tunnel = None if config['host'] == 'localhost' \
                      or config['transport_security'] == 'None_PlaseAttackMeManInTheMiddle' \
                   else sshtunnel.SSHTunnelForwarder(config['host'],
-                       remote_bind_address=('localhost',int(config['port'])))
+                       remote_bind_address=('localhost',int(config['port'])),
+                               ssh_pkey=os.path.expanduser('~/.ssh/id_rsa'))
 
     if config['host'] != 'localhost':
         print("starting ssh tunnel")
