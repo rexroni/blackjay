@@ -25,7 +25,7 @@ Blackjay is:
 ## Installing pyenv on Arch Linux
 Instructions from [pyenv-installer](https://github.com/yyuu/pyenv-installer):
 1. `$ curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash`
-2. Do what it says to do about placing lines in your .bash_profile
+2. Do what it says to do about placing lines in your .bashrc
 3. `$ pyenv update`
 4. `$ pyenv install 3.4.6`
 5. Wait...
