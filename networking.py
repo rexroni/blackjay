@@ -27,7 +27,7 @@ def recv_all(sock):
 
 def send_file(filename, sock):
     size = str(os.stat(filename).st_size)
-    print("send_file: file size: {}".format(size), flush=True)
+    # print("send_file: file size: {}".format(size), flush=True)
     with open(filename, 'rb') as f:
         send_size(size, sock)
         data = f.read(2048)
@@ -48,7 +48,7 @@ def progress_bar(completed, size):
 
 def recv_file(filename, sock):
     size = int(recv_all(sock))
-    print("recv_file: {}, size: {}".format(filename,size), flush=True)
+    # print("recv_file: {}, size: {}".format(filename,size), flush=True)
     read_size = 0
 
     with open(filename, 'wb') as f:
@@ -56,7 +56,7 @@ def recv_file(filename, sock):
             data = recv_all(sock)
             f.write(data)
             read_size += len(data)
-            progress_bar(read_size, size)
+            # progress_bar(read_size, size)
 
 def send_size(data, sock):
     if type(data) is str:
@@ -74,7 +74,7 @@ def send_size(data, sock):
 
 def client_req(ip, port, message):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        print("Trying to connect on : {}".format((ip,port)))
+        # print("Trying to connect on : {}".format((ip,port)))
         sock.connect((ip, port))
         send_size(message, sock)
         response = recv_all(sock)
@@ -94,7 +94,7 @@ def push_update(ip, port, filename):
         send_size(prepare_message, sock)
         response = recv_all(sock)
         if response != prepare_response:
-            print("yoohoo: NO NO NO NO")
+            # print("yoohoo: NO NO NO NO")
             return False;
         else:
             send_file(filename, sock)
