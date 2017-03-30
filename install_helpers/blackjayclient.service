@@ -1,0 +1,17 @@
+[Unit]
+Description=Blackjay client
+
+[Service]
+# set your username here
+User=blackjay
+Type=oneshot
+RemainAfterExit=yes
+StandardOutput=syslog
+StandardError=syslog
+# this should be `python path/to/client.py path/to/folder`
+# where "%h" is a shortcut for the user's home directory (the User specified above)
+ExecStart=/usr/bin/python %h/code/blackjay/client.py %h/shared_files
+
+[Install]
+WantedBy=multi-user.target
+After=basic.target

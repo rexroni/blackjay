@@ -50,6 +50,15 @@ def enter_transport_security():
         print('transport security set to "ssh"')
     return security
 
+def enter_ssh_private_key():
+    ssh_pkey = '~/.ssh/id_rsa'
+    try:
+        ssh_pkey = input('Enter ssh private key to use (~/.ssh/id_rsa): ') or '~/.ssh/id_rsa'
+    except:
+        pass
+    return ssh_pkey
+
+
 def get_config(configpath = None):
     if not configpath:
         configpath = os.path.abspath('.blackjay/config')
@@ -75,6 +84,7 @@ def get_config(configpath = None):
         config['blackjay']['port'] = enter_port()
         config['blackjay']['transport_security'] = enter_transport_security()
         config['blackjay']['password'] = enter_password()
+        config['blackjay']['ssh_pkey'] = enter_ssh_private_key()
 
         with open(configpath, 'w') as configfile:
             config.write(configfile)
@@ -89,7 +99,9 @@ def get_config(configpath = None):
     # we now test if all the options have been set in config
     host = config.get('blackjay','host',fallback=None)
     portstr = config.get('blackjay','port',fallback=None)
+    transport_security = config.get('blackjay','transport_security',fallback=None)
     password = config.get('blackjay','password',fallback=None)
+    ssh_pkey = config.get('blackjay','ssh_pkey',fallback=None)
 
     if not host:
         print('Host not found in config, enter new host value.')
@@ -99,9 +111,17 @@ def get_config(configpath = None):
         print('Port not found in config, enter new port value')
         config['blackjay']['port'] = enter_port()
 
+    if not transport_security:
+        print('transport_security not found in config, enter new transport_security value')
+        config['blackjay']['transport_security'] = enter_transport_security()
+
     if not password:
         print('Password not found in config, enter new password value')
         config['blackjay']['port'] = enter_password()
+
+    if not ssh_pkey:
+        print('ssh private key not found in config, enter new ssh private key file')
+        config['blackjay']['ssh_pkey'] = enter_ssh_private_key()
 
     with open(configpath, 'w') as configfile:
         config.write(configfile)
@@ -120,6 +140,7 @@ def main():
     print('Port: ', config['port'])
     print('Transport Security: ', config['transport_security'])
     print('Password: ', config['password'])
+    print('ssh private key: ',config['ssh_pkey'])
 
     print(config)
 

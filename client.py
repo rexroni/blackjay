@@ -138,7 +138,8 @@ def synchronize(force_pull=False):
             return
         # update the tunnel
         if tunnel is not None and tunnel.is_alive is False:
-            print('restarting tunnel')
+            print('restarting tunnel, but I never ever see this run')
+            tunnel.stop()
             tunnel.restart()
         # open a persistent socket (simpler this way, for now)
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
@@ -180,7 +181,17 @@ def synchronize(force_pull=False):
             cleanup_client_temp_files()
     except:
         traceback.print_exc()
-        pass
+        # try restarting the ssh tunnel
+        if tunnel is not None:
+            print('restarting tunnel, in case that helps')
+            try:
+                tunnel.stop()
+                tunnel.restart()
+                global_port = tunnel.local_bind_port
+            except:
+                pass
+
+
     global_mutex.release()
 
 
@@ -229,16 +240,32 @@ def main():
 
     # load config file
     config = get_config()
-    tunnel = None if config['host'] == 'localhost' \
-                     or config['transport_security'] == 'None_PlaseAttackMeManInTheMiddle' \
-                  else sshtunnel.SSHTunnelForwarder(config['host'],
-                       remote_bind_address=('localhost',int(config['port'])))
+    should_continue = True
+    while should_continue:
+        try:
+            tunnel = None if config['host'] == 'localhost' \
+                             or config['transport_security'] == 'None_PlaseAttackMeManInTheMiddle' \
+                          else sshtunnel.SSHTunnelForwarder(config['host'],
+                               remote_bind_address=('localhost',int(config['port'])),
+                                       ssh_pkey=os.path.expanduser(config['ssh_pkey']))
+            should_continue = False
+        except:
+            traceback.print_exc()
+            print('tunnel creation failed, waiting 15 seconds to try again')
+            sleep(15)
 
     if config['host'] != 'localhost':
         print("starting ssh tunnel")
-        tunnel.start()
+        should_continue = True
+        while should_continue:
+            try:
+                tunnel.start()
+                should_continue = False
+            except:
+                traceback.print_exc()
+                print('network failed, trying again in 15 seconds')
+                sleep(15)
         global_port = tunnel.local_bind_port
-        print(tunnel.tunnel_is_up)
     else:
         global_ip = '127.0.0.1'
         global_port = int(config['port'])

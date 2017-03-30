@@ -1,0 +1,16 @@
+[Unit]
+Description=Blackjay Server
+
+[Service]
+# set your username here
+User=blackjay
+Type=oneshot
+RemainAfterExit=yes
+StandardOutput=syslog
+StandardError=syslog
+# this should be `python path/to/server.py path/to/folder port_number`
+# where "%h" is a shortcut for the user's home directory (the User specified above)
+ExecStart=/usr/bin/python %h/code/blackjay/server.py %h/shared_files 12345
+
+[Install]
+WantedBy=multi-user.target
