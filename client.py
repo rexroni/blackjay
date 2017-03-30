@@ -244,7 +244,7 @@ def main():
     while should_continue:
         try:
             tunnel = None if config['host'] == 'localhost' \
-                             or config['transport_security'] == 'None_PlaseAttackMeManInTheMiddle' \
+                             or config['transport_security'] == 'None_PleaseAttackMeManInTheMiddle' \
                           else sshtunnel.SSHTunnelForwarder(config['host'],
                                remote_bind_address=('localhost',int(config['port'])),
                                        ssh_pkey=os.path.expanduser(config['ssh_pkey']))
@@ -254,7 +254,7 @@ def main():
             print('tunnel creation failed, waiting 15 seconds to try again')
             sleep(15)
 
-    if config['host'] != 'localhost':
+    if tunnel is not None:
         print("starting ssh tunnel")
         should_continue = True
         while should_continue:
@@ -265,9 +265,10 @@ def main():
                 traceback.print_exc()
                 print('network failed, trying again in 15 seconds')
                 sleep(15)
+        global_ip = '127.0.0.1'
         global_port = tunnel.local_bind_port
     else:
-        global_ip = '127.0.0.1'
+        global_ip = config['host']
         global_port = int(config['port'])
 
     # start watching files
