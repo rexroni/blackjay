@@ -113,7 +113,7 @@ class handle_connection(threading.Thread):
                     UID = str(uuid.uuid4())
                     zipfile = '.blackjay/c2s{}.zip'.format(UID)
                     recv_file(zipfile, self.sock)
-                    print("Like a boss")
+                    # print("Like a boss")
                     push, pull, conflicts = extract_client_to_server_archive(zipfile,UID)
                     # right now, accept every acorn!
                     resp_zipname = prep_server_to_client_archive(push, pull, conflicts, UID)

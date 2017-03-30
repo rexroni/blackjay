@@ -39,18 +39,18 @@ def encrypt_file(plainf,secretf,iv,password):
     cipher = fresh_cipher(password, iv)
     # write all but the last block without padding
     block = 0;
-    print('encrypting',plainf)
+    # print('encrypting',plainf)
     while block < lastblock:
         buf = plain.read(BLOCKSIZE)
         secret.write(cipher.encrypt(buf))
-        print('reading %d bytes, %d%% complete     \r'%(len(buf),
-                                        (block+1)/(lastblock+1)*100),end='')
+        # print('reading %d bytes, %d%% complete     \r'%(len(buf),
+        #                                 (block+1)/(lastblock+1)*100),end='')
         block += 1
     buf = plain.read()
     secret.write(cipher.encrypt(pad_data(buf,8)))
-    print('reading %d bytes, %d%% complete     \r'%(len(buf),
-                                    (block+1)/(lastblock+1)*100),end='')
-    print('')
+    # print('reading %d bytes, %d%% complete     \r'%(len(buf),
+                                    # (block+1)/(lastblock+1)*100),end='')
+    # print('')
     plain.close()
     secret.close()
     # preserve access times
@@ -69,18 +69,18 @@ def decrypt_file(secretf,plainf,iv,password):
     cipher = fresh_cipher(password, iv)
     # all but the last block are without padding
     block = 0;
-    print('decrypting',plainf)
+    # print('decrypting',plainf)
     while block < lastblock:
         buf = secret.read(BLOCKSIZE)
         plain.write(cipher.decrypt(buf))
-        print('writing %d bytes, %d%% complete     \r'%(len(buf),
-                                        (block+1)/(lastblock+1)*100),end='')
+        # print('writing %d bytes, %d%% complete     \r'%(len(buf),
+        #                                 (block+1)/(lastblock+1)*100),end='')
         block += 1
     buf = secret.read()
     plain.write(unpad_data(cipher.decrypt(buf)))
-    print('writing %d bytes, %d%% complete     \r'%(len(buf),
-                                    (block+1)/(lastblock+1)*100),end='')
-    print('')
+    # print('writing %d bytes, %d%% complete     \r'%(len(buf),
+    #                                 (block+1)/(lastblock+1)*100),end='')
+    # print('')
     plain.close()
     secret.close()
     # preserve access times
