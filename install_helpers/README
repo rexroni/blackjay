@@ -1,0 +1,43 @@
+How to install blackjay to run on startup
+
+Linux client installation (via systemd):
+    # copy example blackjay client service file to systemd directory
+    sudo cp blackjayclient.service /usr/lib/systemd/system
+    # now edit that example file
+    sudo vim /usr/lib/systemd/system/blackjayclient.service
+        # edit the User= and ExecStart= to be appropriate
+    # now enable the service on boot (--now starts it now as well)
+    sudo systemctl enable --now blackjayclient.service
+    # later, if you want to uninstall
+    sudo systemctl disable --now blackjayclient.service
+
+Linux server installation (via systemd):
+    # copy example blackjay server service file to systemd directory
+    sudo cp blackjayserver.service /usr/lib/systemd/system
+    # now edit that example file
+    sudo vim /usr/lib/systemd/system/blackjayserver.service
+        # edit the User= and ExecStart= to be appropriate
+    # now enable the service on boot (--now starts it now as well)
+    sudo systemctl enable --now blackjayserver.service
+    # later, if you want to uninstall
+    sudo systemctl disable --now blackjayserver.service
+
+Windows client installation (via Task Scheduler):
+    First, edit the windows_client.bat file to have appropriate paths
+    Then, to run the .bat file on startup:
+        Click Windows start button
+        type "Task Scheduler" and hit enter
+        on right side, click "Create Task"
+        name the task "blackjay"
+        under the "Triggers" tab:
+            click "New"
+            in drop-down menu, select "At Startup"
+            click "OK"
+        under the "Actions" tab:
+            click "Browse"
+            select windows_client.bat
+            click "OK"
+        click "OK"
+    # later, if you want to uninstall
+    in the Task Scheduler, on the left side, click on "Task Scheduler Library"
+    In the top-center panel, right-click on "blackjay" and select "Delete"
