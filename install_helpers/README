@@ -41,3 +41,41 @@ Windows client installation (via Task Scheduler):
     # later, if you want to uninstall
     in the Task Scheduler, on the left side, click on "Task Scheduler Library"
     In the top-center panel, right-click on "blackjay" and select "Delete"
+
+    # additional first steps:
+    connect through ssh one time in order to verify host keys of the server
+    enable python to access the network (there should be a pop-up when you run the program)
+
+
+Suggested Network Architecture:
+    - the server runs the blackjay server.py, on some port BLACKJAY_PORT
+    - the server runs an ssh server on some other port SSH_PORT
+    - the blackjay client needs to know the necessary information to establish an ssh connection.  This information includes:
+        - username on the server for which ssh access has been established
+        - location of private ssh key on the client filesystem
+        - hostname of the server
+        - SSH_PORT on the server
+    - The blackjay client also needs the BLACKJAY_PORT, so after establishing an ssh tunnel it will be able to find the blackjay program running on the server
+
+
+     local machine                    router or       server machine
+    ----------------                  firewall       ----------------
+    |              |                     |           |  ----------  |
+    |  ----------  |                     |           |  |blackjay|  |
+    |  |blackjay|  |                     |           |  | server |  |
+    |  | client |  |                     |           |  ----------  |
+    |  ----------  |                     |           |       ^\     |
+    |      v       |                     |           |       ^ \    |
+    |      v       |                     |           |       *  BLACKJAY_PORT
+    |      *       |                     |           |       *    should only
+    |      *       |                     |           |       *    be accessed
+    |      *       |        SSH_PORT is  | SSH_PORT  |       *    internally
+    |      *       |         forwarded \ |         \ |       *    on the server
+    |      *       |                    \|          \|       *      |
+    |      *****=========================================*****      |
+    |           /  |                     |           |  \           |
+    |          /   |                     |           |   \          |
+    |traffic enters|                     |           |traffic exits |
+    | beginning of |                     |           |    end of    |
+    |   ssh tunnel |                     |           |  ssh tunnel  |
+

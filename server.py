@@ -55,7 +55,11 @@ def make_server_updates_live(push,UID):
             # delete files marked for deletions
             p,f = os.path.split(name)
             # delete the files
-            os.remove(name)
+            try:
+                os.remove(name)
+            except FileNotFoundError:
+                # don't care if it is already gone
+                pass
             # prune empty folders if necessary
             try:
                 os.removedirs(p)

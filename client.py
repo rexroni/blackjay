@@ -82,7 +82,11 @@ def make_client_updates_live(push,pull,conflicts,password):
             # delete files marked for deletions
             p,f = os.path.split(name)
             # delete the files
-            os.remove(name)
+            try:
+                os.remove(name)
+            except FileNotFoundError:
+                # don't care if it is already gone
+                pass
             # prune empty folders if necessary
             try:
                 os.removedirs(p)
@@ -243,11 +247,21 @@ def main():
     should_continue = True
     while should_continue:
         try:
-            tunnel = None if config['host'] == 'localhost' \
-                             or config['transport_security'] == 'None_PleaseAttackMeManInTheMiddle' \
-                          else sshtunnel.SSHTunnelForwarder(config['host'],
-                               remote_bind_address=('localhost',int(config['port'])),
-                                       ssh_pkey=os.path.expanduser(config['ssh_pkey']))
+            dont_tunnel = config['host'] == 'localhost' or \
+                         config['transport_security'] == \
+                            'None_PleaseAttackMeManInTheMiddle'
+            if dont_tunnel:
+                tunnel = None
+            else:
+                host = config['host']
+                ssh_user = config['ssh_user']
+                ssh_pkey = config['ssh_pkey']
+                ssh_port = config['ssh_port']
+                tunnel = sshtunnel.SSHTunnelForwarder(
+                         host if ssh_port is 'none' else (host,int(ssh_port)),
+                         remote_bind_address=('localhost',int(config['port'])),
+                         ssh_username=None if ssh_user is 'none' else ssh_user,
+                         ssh_pkey=None if ssh_pkey is 'none' else os.path.expanduser(ssh_pkey))
             should_continue = False
         except:
             traceback.print_exc()

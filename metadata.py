@@ -90,7 +90,7 @@ def get_updated_local_metadata():
                            'confl_md5sum':'none' }
     # check for deleted files
     for name in meta.keys():
-        if os.path.exists(name) is False:
+        if meta[name]['del_flag'] is False and os.path.exists(name) is False:
             meta[name]['del_flag'] = True
             found_an_update = True
             # prune empty folders if necessary

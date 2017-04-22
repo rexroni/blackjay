@@ -5,7 +5,7 @@ import getpass
 from ignore import default_ignore_file
 
 def enter_password():
-    print("Enter password for file encryption")
+    print("\nEnter password for file encryption")
     pprompt = lambda: (getpass.getpass(), getpass.getpass('Retype password: '))
     while True:
         p1, p2 = pprompt()
@@ -20,16 +20,18 @@ def enter_password():
 def enter_hostname():
     host = 'localhost'
     try:
-        host = input('Enter the hostname or ip of server (localhost): ') or 'localhost'
+        host = input('\nEnter the hostname or ip of server: ') or 'localhost'
     except:
         pass
+    if host == 'localhost':
+        print('hostname set to localhost.  Transport security will be disabled.')
     return host
 
 def enter_port():
     port = 0
     while not port:
         try:
-            portstr = input('Enter the port number for communication with server (12345): ') or '12345'
+            portstr = input('\nEnter the blackjay port (12345): ') or '12345'
         except:
             pass
 
@@ -42,7 +44,7 @@ def enter_port():
 def enter_transport_security():
     security = 'ssh'
     try:
-        security = input('Enter the transport security ( [ssh]/None_PleaseAttackMeManInTheMiddle ): ') or 'ssh'
+        security = input('\nEnter the transport security ( [ssh]/None_PleaseAttackMeManInTheMiddle ): ') or 'ssh'
     except:
         pass
     if security != 'ssh' and security != 'None_PleaseAttackMeManInTheMiddle':
@@ -51,13 +53,42 @@ def enter_transport_security():
     return security
 
 def enter_ssh_private_key():
-    ssh_pkey = '~/.ssh/id_rsa'
+    ssh_pkey = 'none'
+    while True:
+        try:
+            ssh_pkey = input('\nEnter ssh private key to use, defaults to "none", meaning use system defaults (only seems to work on Macs): ') or 'none'
+        except:
+            pass
+        if ssh_pkey is 'none':
+            return ssh_pkey
+        if os.path.isfile(os.path.expanduser(ssh_pkey)) is False:
+            print(ssh_pkey,'is not a correct path to a file')
+        else:
+            return ssh_pkey
+
+def enter_ssh_user():
+    ssh_user = 'none'
     try:
-        ssh_pkey = input('Enter ssh private key to use (~/.ssh/id_rsa): ') or '~/.ssh/id_rsa'
+        ssh_user = input('\nEnter ssh username to use, defaults to "none", meaning use the current user\'s username: ') or 'none'
     except:
         pass
-    return ssh_pkey
+    return ssh_user
 
+def enter_ssh_port():
+    ssh_portstr = 'none'
+    while True:
+        try:
+            ssh_portstr = input('\nEnter ssh port to use, defaults to "none", meaning use the ssh config file values (should work in Linux and Mac): ') or 'none'
+        except:
+            pass
+        if ssh_portstr is 'none':
+            return ssh_portstr
+        else:
+            try:
+                ssh_port = int(ssh_portstr)
+                return ssh_portstr
+            except:
+                print('ssh port must be "none" or a number. ',ssh_portstr,'is not valid.')
 
 def get_config(configpath = None):
     if not configpath:
@@ -80,48 +111,55 @@ def get_config(configpath = None):
     if os.path.exists(configpath) is not True:
         print('Setting up a new config file at {}'.format(configpath))
         config.add_section('blackjay')
-        config['blackjay']['host'] = enter_hostname()
-        config['blackjay']['port'] = enter_port()
-        config['blackjay']['transport_security'] = enter_transport_security()
-        config['blackjay']['password'] = enter_password()
-        config['blackjay']['ssh_pkey'] = enter_ssh_private_key()
-
-        with open(configpath, 'w') as configfile:
-            config.write(configfile)
-
-    with open(configpath, 'r') as configfile:
-        config.read_file(configfile)
-
-    if not 'blackjay' in config.sections():
-        print('It looks like your config file is missint the blackjay section')
-        config.add_section('blackjay')
+    else:
+        with open(configpath, 'r') as configfile:
+            config.read_file(configfile)
+        if not 'blackjay' in config.sections():
+            config.add_section('blackjay')
 
     # we now test if all the options have been set in config
     host = config.get('blackjay','host',fallback=None)
-    portstr = config.get('blackjay','port',fallback=None)
+    port = config.get('blackjay','port',fallback=None)
     transport_security = config.get('blackjay','transport_security',fallback=None)
     password = config.get('blackjay','password',fallback=None)
     ssh_pkey = config.get('blackjay','ssh_pkey',fallback=None)
+    ssh_user = config.get('blackjay','ssh_user',fallback=None)
+    ssh_port = config.get('blackjay','ssh_port',fallback=None)
 
     if not host:
         print('Host not found in config, enter new host value.')
-        config['blackjay']['host'] = enter_hostname()
+        host = enter_hostname()
+        config['blackjay']['host'] = host
+        if host == 'localhost':
+            print('disabling transport security.')
+            print('This should not be a problem since blackjay is being hosted locally')
+            transport_security = 'None_BlackjayIsHostedLocally'
+            config['blackjay']['transport_security'] = transport_security
 
-    if not portstr:
-        print('Port not found in config, enter new port value')
+    if host != 'localhost' and not transport_security:
+        print('transport_security not found in config, enter new transport_security value')
+        transport_security = enter_transport_security()
+        config['blackjay']['transport_security'] = transport_security
+
+    if transport_security == 'ssh':
+        if not ssh_user:
+            print('ssh username not found in config, enter new ssh username')
+            config['blackjay']['ssh_user'] = enter_ssh_user()
+        if not ssh_pkey:
+            print('ssh private key not found in config, enter new ssh private key file')
+            config['blackjay']['ssh_pkey'] = enter_ssh_private_key()
+        if not ssh_port:
+            print('ssh port not found in config, enter new ssh port')
+            config['blackjay']['ssh_port'] = enter_ssh_port()
+
+    if not port:
+        print('Blackjay port not found in config, enter new port value')
         config['blackjay']['port'] = enter_port()
 
-    if not transport_security:
-        print('transport_security not found in config, enter new transport_security value')
-        config['blackjay']['transport_security'] = enter_transport_security()
-
     if not password:
-        print('Password not found in config, enter new password value')
-        config['blackjay']['port'] = enter_password()
+        print('Password for blackjay encryption not found in config, enter new password')
+        config['blackjay']['password'] = enter_password()
 
-    if not ssh_pkey:
-        print('ssh private key not found in config, enter new ssh private key file')
-        config['blackjay']['ssh_pkey'] = enter_ssh_private_key()
 
     with open(configpath, 'w') as configfile:
         config.write(configfile)
